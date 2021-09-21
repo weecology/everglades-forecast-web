@@ -149,7 +149,7 @@ plot_nests<-function(df, MAPBOX_ACCESS_TOKEN){
   
   m<-leaflet(data=df) %>% 
     addProviderTiles("MapBox", layerId = "mapbox_id",options = providerTileOptions(id = mapbox_tileset, minZoom = 8, maxNativeZoom=24, maxZoom = 24, accessToken = MAPBOX_ACCESS_TOKEN)) %>%
-    addCircles(stroke = T,fillOpacity = 0.1,radius = 0.4,popup = ~htmlEscape(paste(Date,round(score,2),sep=":")))
+    addCircles(stroke = T,fillOpacity = 0.1,radius = 0.4,popup = ~htmlEscape(paste(Date,round(score,2),target_ind,sep=":")))
   return(m)
 }
 
@@ -158,7 +158,7 @@ update_nests<-function(df, MAPBOX_ACCESS_TOKEN){
   mapbox_tileset<-paste("bweinstein.",mapbox_tileset,sep="")
     leafletProxy("nest_map")  %>% clearShapes() %>%
      addProviderTiles("MapBox", layerId = "mapbox_id",options = providerTileOptions(id = mapbox_tileset, minZoom = 8, maxNativeZoom=24, maxZoom = 24, accessToken = MAPBOX_ACCESS_TOKEN)) %>%
-      addCircles(data=df,stroke = T,fillOpacity = 0.1,radius = 0.4,popup = ~htmlEscape(paste(Date,round(score,2),sep=", ")))
+      addCircles(data=df,stroke = T,fillOpacity = 0.1,radius = 0.4,popup = ~htmlEscape(paste(Date,round(score,2),target_ind,sep=", ")))
 }
 
 #Construct mapbox url
