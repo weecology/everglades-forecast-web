@@ -9,6 +9,7 @@ predicted_nest_page<-function(nestdf){
       uiOutput('nest_year_selector'),
       plotOutput("nest_history_plot", height=400,width=700),
       uiOutput('nest_date_slider'),
+      uiOutput('nest_id_selector'),
       leafletOutput("nest_map", height=800,width=900)
     )})
 }
