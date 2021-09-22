@@ -178,13 +178,17 @@ shinyServer(function(input, output, session) {
 
   observeEvent(input$nest_date,{
     selected_nests<-nest_map_date_filter()
-    selected_nests<-selected_nests %>% filter(Site==input$nest_site, target_ind %in% as.numeric(input$nest_ids))
-    update_nests(selected_nests, MAPBOX_ACCESS_TOKEN)
+    selected_nests<-selected_nests %>% filter(Site==input$nest_site)
+    mapbox_tileset<-unique(selected_nests$tileset_id)[1]
+    selected_nests<-selected_nests %>% filter(target_ind %in% as.numeric(input$nest_ids))
+    update_nests(mapbox_tileset, selected_nests, MAPBOX_ACCESS_TOKEN)
   })
 
   observeEvent(input$nest_ids,{
     selected_nests<-nest_map_date_filter()
-    selected_nests<-selected_nests %>% filter(Site==input$nest_site, target_ind %in% as.numeric(input$nest_ids))
-    update_nests(selected_nests, MAPBOX_ACCESS_TOKEN)
+    selected_nests<-selected_nests %>% filter(Site==input$nest_site)
+    mapbox_tileset<-unique(selected_nests$tileset_id)[1]
+    selected_nests<-selected_nests %>% filter(target_ind %in% as.numeric(input$nest_ids))
+    update_nests(mapbox_tileset, selected_nests, MAPBOX_ACCESS_TOKEN)
   })
 })
