@@ -126,16 +126,25 @@ shinyServer(function(input, output, session) {
   ###Nest Page###
   nest_filter<-reactive({
     #filter based on selection
-    to_plot <- nestdf %>% filter(Site==input$nest_site) 
+    to_plot <- nestdf %>% filter(Site==input$nest_site, Year==input$nest_year)
     return(to_plot)
   })
   output$nest_summary_table <- renderTable(nest_summary_table(nestdf))
   output$nest_history_plot <- renderPlot(nest_history(nest_filter()))
   
+  #Reactive UI selector for years
+  output$nest_year_selector = renderUI({
+    selected_site <- as.character(input$nest_site)
+    selected_df <- nestdf %>% filter(Site==selected_site)
+    available_years<-sort(unique(selected_df$Year))
+    selectInput(inputId = "nest_year","Year",choices=available_years)
+  })
+
   #Reactive UI slider for dates
   output$nest_date_slider = renderUI({
     selected_site <- as.character(input$nest_site)
-    selected_df <- nestdf %>% filter(Site==selected_site)
+    selected_year <- input$nest_year
+    selected_df <- nestdf %>% filter(Site==selected_site, Year==selected_year)
     available_dates<-sort(unique(selected_df$Date))
     sliderTextInput(inputId = "nest_date","Select Date",choices=available_dates)
   })
