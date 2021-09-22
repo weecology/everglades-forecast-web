@@ -153,8 +153,7 @@ plot_nests<-function(df, MAPBOX_ACCESS_TOKEN){
   return(m)
 }
 
-update_nests<-function(df, MAPBOX_ACCESS_TOKEN){
-  mapbox_tileset<-unique(df$tileset_id)[1]
+update_nests<-function(mapbox_tileset, df, MAPBOX_ACCESS_TOKEN){
   mapbox_tileset<-paste("bweinstein.",mapbox_tileset,sep="")
     leafletProxy("nest_map")  %>% clearShapes() %>%
      addProviderTiles("MapBox", layerId = "mapbox_id",options = providerTileOptions(id = mapbox_tileset, minZoom = 8, maxNativeZoom=24, maxZoom = 24, accessToken = MAPBOX_ACCESS_TOKEN)) %>%
