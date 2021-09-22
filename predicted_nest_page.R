@@ -6,6 +6,7 @@ predicted_nest_page<-function(nestdf){
       h2("Site Summary"),
       tableOutput("nest_summary_table"),
       selectInput("nest_site","Site",choices = unique(nestdf$Site),selected="StartMel"),
+      uiOutput('nest_year_selector'),
       plotOutput("nest_history_plot", height=400,width=700),
       uiOutput('nest_date_slider'),
       leafletOutput("nest_map", height=800,width=900)
