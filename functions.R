@@ -35,8 +35,15 @@ filter_annotations<-function(raw_data){
   selected_ids<-unique(raw_data$selected_i)
   
   #Majority rule for labels
-  majority_rule<-raw_data %>% group_by(selected_i, label) %>% summarize(n=n()) %>% arrange(desc(n)) %>% slice(1) %>% as.data.frame() %>% mutate(majority_class=label) %>%
-    dplyr::select(selected_i,majority_class)
+  majority_rule<-raw_data %>%
+                 data.frame() %>% # Converting to a non-spatial data frame improves speed 100-200x
+                 group_by(selected_i, label) %>%
+                 summarize(n=n()) %>%
+                 arrange(desc(n)) %>%
+                 slice(1) %>%
+                 as.data.frame() %>%
+                 mutate(majority_class=label) %>%
+                 dplyr::select(selected_i,majority_class)
   
   selected_boxes<-raw_data %>% filter(selected_i %in% selected_ids) %>% inner_join(majority_rule) %>% filter(!is.na(event))
   
