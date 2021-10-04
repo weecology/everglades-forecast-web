@@ -160,11 +160,18 @@ shinyServer(function(input, output, session) {
   })
 
   #Default plot
-  output$nest_map<-renderLeaflet(plot_nests(nestdf %>% filter(Site=="Joule",Date==min(Date)),MAPBOX_ACCESS_TOKEN))
+  output$nest_map<-renderLeaflet(plot_nests(nestdf %>% filter(Site=="Joule") %>% filter(Date==min(Date)),
+                                            df %>% filter(site=="Joule") %>% filter(event==min(event)),
+                                            MAPBOX_ACCESS_TOKEN))
   
   nest_map_site_filter<-reactive({
     selected_nests<-nestdf %>% filter(Site == input$nest_site)
     return(selected_nests)
+  })
+
+  bird_map_site_filter <- reactive({
+    selected_birds <- df %>% filter(site == input$nest_site)
+    return(selected_birds)
   })
 
   nest_map_date_filter<-reactive({
@@ -172,24 +179,37 @@ shinyServer(function(input, output, session) {
     return(selected_nests)
   })
 
+  bird_map_date_filter<-reactive({
+    selected_birds <- df %>% filter(event == input$nest_date)
+    return(selected_birds)
+  })
+
   observeEvent(input$nest_site,{
     selected_nests<-nest_map_site_filter()
-    output$nest_map<-renderLeaflet(plot_nests(selected_nests %>% filter(Date==min(Date)),MAPBOX_ACCESS_TOKEN))
+    selected_birds <- bird_map_site_filter()
+    min_date <- min(selected_nests$Date)
+    output$nest_map<-renderLeaflet(plot_nests(selected_nests %>% filter(Date==min_date),
+                                              selected_birds %>% filter(event==min_date),
+                                              MAPBOX_ACCESS_TOKEN))
   })
 
   observeEvent(input$nest_date,{
     selected_nests<-nest_map_date_filter()
+    selected_birds <- bird_map_date_filter()
     selected_nests<-selected_nests %>% filter(Site==input$nest_site)
+    selected_birds <- selected_birds %>% filter(site==input$nest_site)
     mapbox_tileset<-unique(selected_nests$tileset_id)[1]
     selected_nests<-selected_nests %>% filter(target_ind %in% as.numeric(input$nest_ids))
-    update_nests(mapbox_tileset, selected_nests, MAPBOX_ACCESS_TOKEN)
+    update_nests(mapbox_tileset, selected_nests, selected_birds, MAPBOX_ACCESS_TOKEN)
   })
 
   observeEvent(input$nest_ids,{
     selected_nests<-nest_map_date_filter()
+    selected_birds <- bird_map_date_filter()
     selected_nests<-selected_nests %>% filter(Site==input$nest_site)
+    selected_birds <- selected_birds %>% filter(site==input$nest_site)
     mapbox_tileset<-unique(selected_nests$tileset_id)[1]
     selected_nests<-selected_nests %>% filter(target_ind %in% as.numeric(input$nest_ids))
-    update_nests(mapbox_tileset, selected_nests, MAPBOX_ACCESS_TOKEN)
+    update_nests(mapbox_tileset, selected_nests, selected_birds, MAPBOX_ACCESS_TOKEN)
   })
 })
