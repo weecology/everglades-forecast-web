@@ -1,6 +1,6 @@
 landing_page<-function(selected_boxes){
   
-  site_list<-c("All",selected_boxes$site)
+  site_list<-c("All", unique(selected_boxes$site))
   select_image_list<-unique(selected_boxes$tileset_id)
   
   renderUI({
