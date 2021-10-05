@@ -28,7 +28,7 @@ shinyServer(function(input, output, session) {
   MAPBOX_ACCESS_TOKEN=Sys.getenv("MAPBOX_ACCESS_TOKEN")
   
   #Predictions
-  unzip("data/PredictedBirds.zip", exdir = "data/")
+  unzip("data/PredictedBirds.zip", exdir = "data")
   df<-st_read("data/PredictedBirds.shp")
   df$event<-as.Date(df$event,"%m_%d_%Y")
   df$tileset_id<-construct_id(df$site,df$event)
