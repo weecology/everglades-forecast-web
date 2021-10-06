@@ -37,6 +37,7 @@ shinyServer(function(input, output, session) {
   df<-st_centroid(df)
   
   #Nest predictions
+  unzip("data/nest_detections.zip", exdir = "data")
   nestdf<-st_read("data/nest_detections.shp")
   nestdf$Date<-as.Date(nestdf$Date,"%m_%d_%Y")
   nestdf$tileset_id<-construct_id(nestdf$Site,nestdf$Date)
