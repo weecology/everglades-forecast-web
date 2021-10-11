@@ -43,8 +43,15 @@ shinyServer(function(input, output, session) {
   nestdf$tileset_id<-construct_id(nestdf$Site,nestdf$Date)
   nestdf<-st_centroid(nestdf)
   nestdf<-st_transform(nestdf,4326)
-  selected_indices<-nestdf %>% as.data.frame() %>% filter(score>0.2) %>% group_by(Site, target_ind) %>% 
-    summarize(n=n()) %>% filter(n>2) %>% mutate(site_index=paste(Site,target_ind)) 
+  min_detections <- 3
+  min_confidence <- 0.2
+  selected_indices<-nestdf %>%
+                    as.data.frame() %>%
+                    filter(score > min_confidence) %>%
+                    group_by(Site, target_ind) %>%
+                    summarize(n=n()) %>%
+                    filter(n >= min_detections) %>%
+                    mutate(site_index=paste(Site,target_ind)) 
   nestdf<-nestdf %>% mutate(site_index=paste(Site,target_ind)) %>% inner_join(selected_indices)
   
   #Create pages
@@ -131,7 +138,7 @@ shinyServer(function(input, output, session) {
     to_plot <- nestdf %>% filter(Site==input$nest_site, Year==input$nest_year)
     return(to_plot)
   })
-  output$nest_summary_table <- renderTable(nest_summary_table(nestdf))
+  output$nest_summary_table <- renderTable(nest_summary_table(nestdf, min_detections))
   output$nest_history_plot <- renderPlot(nest_history(nest_filter()))
 
   #Reactive UI selector for years
