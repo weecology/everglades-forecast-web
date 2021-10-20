@@ -16,6 +16,10 @@ source("functions.R")
 
 shinyServer(function(input, output, session) {
    
+  # Set thresholds
+  min_confidence <- 0.2
+  min_detections <- 3
+
   #Load data
   raw_data <- load_classifications()
   selected_boxes<-filter_annotations(raw_data)
@@ -32,7 +36,7 @@ shinyServer(function(input, output, session) {
   df<-st_read("data/PredictedBirds.shp")
   df$event<-as.Date(df$event,"%m_%d_%Y")
   df$tileset_id<-construct_id(df$site,df$event)
-  df<-df %>% filter(score>0.1)
+  df<-df %>% filter(score > min_confidence)
   df<-st_transform(df,4326)
   df<-st_centroid(df)
   
@@ -43,8 +47,6 @@ shinyServer(function(input, output, session) {
   nestdf$tileset_id<-construct_id(nestdf$Site,nestdf$Date)
   nestdf<-st_centroid(nestdf)
   nestdf<-st_transform(nestdf,4326)
-  min_detections <- 3
-  min_confidence <- 0.2
   selected_indices<-nestdf %>%
                     as.data.frame() %>%
                     filter(score > min_confidence) %>%
