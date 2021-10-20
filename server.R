@@ -35,6 +35,7 @@ shinyServer(function(input, output, session) {
   df<-df %>% filter(score>0.1)
   df<-st_transform(df,4326)
   df<-st_centroid(df)
+  df <- mutate(df, bird_id = row_number())
   
   #Nest predictions
   unzip("data/nest_detections.zip", exdir = "data")
