@@ -167,7 +167,11 @@ shinyServer(function(input, output, session) {
     selected_year <- input$nest_year
     selected_df <- nestdf %>% filter(Site==selected_site, Year==selected_year)
     available_nests<-sort(unique(selected_df$target_ind))
-    selectInput(inputId = "nest_ids","Nest IDs", multiple=TRUE, choices=available_nests, selected=available_nests)
+    pickerInput(inputId = "nest_ids",
+                label = "Nest IDs",
+                multiple = TRUE,
+                choices = available_nests,
+                options = list(`actions-box` = TRUE))
   })
 
   #Default plot
