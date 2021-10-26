@@ -17,7 +17,7 @@ source("functions.R")
 shinyServer(function(input, output, session) {
    
   # Set thresholds
-  min_confidence <- 0.2
+  min_confidence <- 0.4
   min_detections <- 3
 
   #Load data
