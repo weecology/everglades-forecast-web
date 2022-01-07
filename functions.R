@@ -183,10 +183,10 @@ update_nests<-function(mapbox_tileset, df, bird_df,
   } else {
     leafletProxy("nest_map")  %>% clearShapes() %>%
       addProviderTiles("MapBox", layerId = "mapbox_id",options = providerTileOptions(id = mapbox_tileset, minZoom = 8, maxNativeZoom=24, maxZoom = 24, accessToken = MAPBOX_ACCESS_TOKEN)) %>%
+      addCircles(data = bird_data_last_selected, stroke = T, fillOpacity = 0, radius = .8, color="orange") %>% 
       addCircles(data=df,stroke = T,fillOpacity = 0.1,radius = 0.5,popup = ~htmlEscape(paste(Date,round(score,2),target_ind,sep=", "))) %>%
       addCircles(data = bird_df, stroke = T, fillOpacity = 0, radius = 0.2, color = "red",
                  popup = ~htmlEscape(paste(round(score,2), bird_id, sep=":"))) %>%
-      addCircles(data = bird_data_last_selected, stroke = T, fillOpacity = 0, radius = 1) %>%
       setView(lng, lat, zoom)
   }
 }
