@@ -11,6 +11,7 @@ predicted_nest_page<-function(nestdf){
       #plotOutput("nest_history_plot", height=400,width=700),
       uiOutput('nest_id_selector'),
       uiOutput('bird_id_selector'),
+      uiOutput('field_nest_id_selector'),
       uiOutput('nest_date_slider'),
       leafletOutput("nest_map", height=800,width=900)
     )})
