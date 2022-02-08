@@ -1,4 +1,5 @@
 library(sf)
+library(dplyr)
 
 # Set thresholds
 min_confidence <- 0.4
@@ -14,6 +15,9 @@ field_nests <- st_read(
   "https://raw.githubusercontent.com/weecology/EvergladesWadingBird/main/Nesting/UAV_Flagged_Nest_Coordinates_2021.csv",
   options = c("X_POSSIBLE_NAMES=long", "Y_POSSIBLE_NAMES=lat"),
   crs = 4326)
+field_nests <- field_nests %>%
+  rename(site = colony) %>%
+  mutate(year = 2021, field_nest_id = seq_len(nrow(field_nests)))
 
 #Predictions
 unzip("data/PredictedBirds.zip", exdir = "data")
