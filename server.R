@@ -122,7 +122,9 @@ shinyServer(function(input, output, session) {
   output$nest_date_slider = renderUI({
     selected_site <- as.character(input$nest_site)
     selected_year <- input$nest_year
-    selected_df <- nestdf %>% filter(Site==selected_site, Year==selected_year)
+    selected_df <- nestdf %>%
+      filter(Site==selected_site, Year==selected_year) %>%
+      filter(Date < "2021-05-05") # Filter out dates where field nests are flagged to avoid indicating which field nests are real
     available_dates<-sort(unique(selected_df$Date))
     sliderTextInput(inputId = "nest_date","Select Date",choices=available_dates)
   })
@@ -285,22 +287,20 @@ shinyServer(function(input, output, session) {
       filter(year == input$nest_year) %>%
       filter(field_nest_id %in% as.numeric(input$field_nest_ids))
     mapbox_tileset<-unique(selected_nests$tileset_id)[1]
+
     if (length(input$bird_ids) == 1){
-      focal_birds <- filter(selected_birds, bird_id == input$bird_ids)
+      focal_bird <- filter(selected_birds, bird_id == input$bird_ids)
       focal_position <<- focal_bird$geometry[[1]]
-      update_nests(mapbox_tileset,
-                   selected_nests,
-                   selected_birds,
-                   selected_field_nests,
-                   MAPBOX_ACCESS_TOKEN,
-                   focal_position)
     } else {
-      update_nests(mapbox_tileset,
-                   selected_nests,
-                   selected_birds,
-                   selected_field_nests,
-                   MAPBOX_ACCESS_TOKEN)
+      focal_position <- NULL
     }
+
+    update_nests(mapbox_tileset,
+                  selected_nests,
+                  selected_birds,
+                  selected_field_nests,
+                  MAPBOX_ACCESS_TOKEN,
+                  focal_position)
   })
 
   observeEvent(input$field_nest_ids,{
@@ -318,18 +318,15 @@ shinyServer(function(input, output, session) {
       focal_field_nest <- selected_field_nests %>%
         filter(field_nest_id == input$field_nest_ids)
       focal_position <<- focal_field_nest$geometry[[1]]
-      update_nests(mapbox_tileset,
-                   selected_nests,
-                   selected_birds,
-                   selected_field_nests,
-                   MAPBOX_ACCESS_TOKEN,
-                   focal_position)
     } else {
-      update_nests(mapbox_tileset,
-                   selected_nests,
-                   selected_birds,
-                   selected_field_nests,
-                   MAPBOX_ACCESS_TOKEN)
+      focal_position <- NULL
     }
+
+    update_nests(mapbox_tileset,
+      selected_nests,
+      selected_birds,
+      selected_field_nests,
+      MAPBOX_ACCESS_TOKEN,
+      focal_position)
   })
 })
