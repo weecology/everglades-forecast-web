@@ -6,6 +6,7 @@ library(shiny)
 library(shinyWidgets)
 library(htmltools)
 library(sf)
+library(stringr)
 
 #Source page UIs
 source("landing_page.R")
@@ -170,12 +171,12 @@ shinyServer(function(input, output, session) {
   })
 
   #Reactive UI selector for Field Nest IDs
-  output$field_nest_id_selector <- renderUI({
+  output$field_nest_samp_id_selector <- renderUI({
     selected_site <- as.character(input$nest_site)
     selected_year <- input$nest_year
     selected_field_nests <- field_nests %>% filter(site==selected_site, year==selected_year)
-    available_nests <- sort(unique(selected_field_nests$field_nest_id))
-    pickerInput(inputId = "field_nest_ids",
+    available_nests <- str_sort(unique(selected_field_nests$sample_id), numeric = TRUE)
+    pickerInput(inputId = "field_nest_samp_ids",
                 label = "Field Nest IDs",
                 multiple = TRUE,
                 choices = available_nests,
@@ -285,7 +286,7 @@ shinyServer(function(input, output, session) {
       filter(label %in% input$species)
     selected_field_nests <- field_nests_site_filter() %>%
       filter(year == input$nest_year) %>%
-      filter(field_nest_id %in% as.numeric(input$field_nest_ids))
+      filter(sample_id %in% as.numeric(input$field_nest_samp_ids))
     mapbox_tileset<-unique(selected_nests$tileset_id)[1]
 
     if (length(input$bird_ids) == 1){
@@ -303,7 +304,7 @@ shinyServer(function(input, output, session) {
                   focal_position)
   })
 
-  observeEvent(input$field_nest_ids,{
+  observeEvent(input$field_nest_samp_ids,{
     selected_nests <- nest_map_date_filter() %>%
       filter(Site==input$nest_site)
     selected_birds <- bird_map_date_filter() %>%
@@ -311,12 +312,12 @@ shinyServer(function(input, output, session) {
       filter(label %in% input$species)
     selected_field_nests <- field_nests_site_filter() %>%
       filter(year == input$nest_year) %>%
-      filter(field_nest_id %in% as.numeric(input$field_nest_ids))
+      filter(sample_id %in% as.numeric(input$field_nest_samp_ids))
     mapbox_tileset <- unique(selected_nests$tileset_id)[1]
 
-    if (length(input$field_nest_ids) == 1){
+    if (length(input$field_nest_samp_ids) == 1){
       focal_field_nest <- selected_field_nests %>%
-        filter(field_nest_id == input$field_nest_ids)
+        filter(sample_id == input$field_nest_samp_ids)
       focal_position <<- focal_field_nest$geometry[[1]]
     } else {
       focal_position <- NULL
