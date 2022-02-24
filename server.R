@@ -307,13 +307,15 @@ shinyServer(function(input, output, session) {
   observeEvent(input$field_nest_samp_ids,{
     selected_nests <- nest_map_date_filter() %>%
       filter(Site==input$nest_site)
+    mapbox_tileset <- unique(selected_nests$tileset_id)[1]
+    selected_nests <- selected_nests %>%
+      filter(target_ind %in% as.numeric(input$nest_ids))
     selected_birds <- bird_map_date_filter() %>%
       filter(site == input$nest_site) %>%
       filter(label %in% input$species)
     selected_field_nests <- field_nests_site_filter() %>%
       filter(year == input$nest_year) %>%
       filter(sample_id %in% as.numeric(input$field_nest_samp_ids))
-    mapbox_tileset <- unique(selected_nests$tileset_id)[1]
 
     if (length(input$field_nest_samp_ids) == 1){
       focal_field_nest <- selected_field_nests %>%
