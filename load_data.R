@@ -1,5 +1,6 @@
 library(sf)
 library(dplyr)
+source('functions.R')
 
 # Set thresholds
 min_confidence <- 0.4
