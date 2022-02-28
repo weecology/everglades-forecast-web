@@ -129,14 +129,11 @@ compare_counts<-function(df, selected_boxes){
 }
 
 ##Nest detection
-nest_summary_table<-function(nestdf, min_detections){
+nest_summary_table<-function(nestdf){
   nest_table <- nestdf %>%
                   as.data.frame() %>%
-                  group_by(Site, Year, target_ind) %>%
-                  summarize(n=n()) %>%
-                  filter(n >= min_detections) %>%
                   group_by(Site, Year) %>%
-                  summarize(Nests=n(), Average_Detections = mean(n)) 
+                  summarize(Nests=n(), Average_Detections = mean(num_obs)) 
   return(nest_table)
 }
 

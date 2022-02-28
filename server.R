@@ -108,7 +108,7 @@ shinyServer(function(input, output, session) {
     to_plot <- nestdf %>% filter(Site==input$nest_site, Year==input$nest_year)
     return(to_plot)
   })
-  output$nest_summary_table <- renderTable(nest_summary_table(nestdf, min_detections))
+  output$nest_summary_table <- renderTable(nest_summary_table(nestdf))
   output$nest_history_plot <- renderPlot(nest_history(nest_filter()))
 
   #Reactive UI selector for years

@@ -4,7 +4,6 @@ source('functions.R')
 
 # Set thresholds
 min_confidence <- 0.4
-min_detections <- 3
 
 #Load data
 raw_data <- load_classifications()
@@ -37,10 +36,6 @@ nestdf <- st_centroid(nestdf)
 nestdf <- st_transform(nestdf,4326)
 selected_indices <- nestdf %>%
                 as.data.frame() %>%
-                filter(score > min_confidence) %>%
-                group_by(Site, target_ind) %>%
-                summarize(n = n()) %>%
-                filter(n >= min_detections) %>%
                 mutate(site_index = paste(Site,target_ind)) 
 nestdf <- nestdf %>%
   mutate(site_index = paste(Site,target_ind)) %>%
