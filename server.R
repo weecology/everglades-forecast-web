@@ -120,13 +120,13 @@ shinyServer(function(input, output, session) {
   })
 
   #Reactive UI slider for dates
-  output$nest_date_slider = renderUI({
+  output$date_slider = renderUI({
     selected_site <- as.character(input$nest_site)
     selected_year <- input$nest_year
-    selected_df <- nestdf %>%
-      filter(Site==selected_site, Year==selected_year) %>%
-      filter(Date < "2021-05-05") # Filter out dates where field nests are flagged to avoid indicating which field nests are real
-    available_dates<-sort(unique(selected_df$Date))
+    selected_df <- df %>%
+      filter(site==selected_site, year==selected_year) %>%
+      filter(event < "2021-05-05") # Filter out dates where field nests are flagged to avoid indicating which field nests are real
+    available_dates<-sort(unique(selected_df$event))
     sliderTextInput(inputId = "nest_date","Select Date",choices=available_dates)
   })
 
@@ -218,7 +218,7 @@ shinyServer(function(input, output, session) {
     selected_nests<-nest_map_site_filter()
     selected_birds <- bird_map_site_filter()
     selected_field_nests <- field_nests_site_filter()
-    min_date <- min(selected_nests$Date)
+    min_date <- min(selected_birds$event)
     output$nest_map<-renderLeaflet(
       plot_nests(
         selected_nests %>% filter(Date==min_date),
