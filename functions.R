@@ -161,12 +161,12 @@ species_colors <- colorFactor(palette = c("yellow", "blue",
                               ordered=TRUE)
 
 plot_nests<-function(df, bird_df, MAPBOX_ACCESS_TOKEN){
-  mapbox_tileset<-unique(df$tileset_id)[1]
+  mapbox_tileset<-unique(bird_df$tileset_id)[1]
   mapbox_tileset<-paste("bweinstein.",mapbox_tileset,sep="")
 
   m<-leaflet(data=df) %>% 
     addProviderTiles("MapBox", layerId = "mapbox_id",options = providerTileOptions(id = mapbox_tileset, minZoom = 8, maxNativeZoom=24, maxZoom = 24, accessToken = MAPBOX_ACCESS_TOKEN)) %>%
-    addCircles(stroke = T,fillOpacity = 0.1,radius = 0.5,popup = ~htmlEscape(paste(Date,round(score,2),target_ind,sep=":"))) %>%
+    addCircles(stroke = T,fillOpacity = 0.1,radius = 0.5,popup = ~htmlEscape(paste(round(sum_top1_s/num_obs_to,2),target_ind,sep=":"))) %>%
     addCircles(data = bird_df, stroke = T, fillOpacity = 0, radius = 0.2, color = ~species_colors(label),
                popup = ~htmlEscape(paste(round(score,2), bird_id, sep=":")))
   return(m)
@@ -181,14 +181,14 @@ update_nests<-function(mapbox_tileset, df, bird_df, field_nests,
   if (is.null(lng) | is.null(lat) | is.null(zoom) | is.null(focal_position)){    
     leafletProxy("nest_map")  %>% clearShapes() %>%
       addProviderTiles("MapBox", layerId = "mapbox_id",options = providerTileOptions(id = mapbox_tileset, minZoom = 8, maxNativeZoom=24, maxZoom = 24, accessToken = MAPBOX_ACCESS_TOKEN)) %>%
-      addCircles(data=df,stroke = T,fillOpacity = 0.1,radius = 0.5,popup = ~htmlEscape(paste(Date,round(score,2),target_ind,sep=", "))) %>%
+      addCircles(data=df,stroke = T,fillOpacity = 0.1,radius = 0.5,popup = ~htmlEscape(paste(round(sum_top1_s/num_obs_to,2),target_ind,sep=", "))) %>%
       addCircles(data = bird_df, stroke = T, fillOpacity = 0, radius = 0.2, color = ~species_colors(label),
                  popup = ~htmlEscape(paste(round(score,2), bird_id, sep=":")))
   } else {
     leafletProxy("nest_map")  %>% clearShapes() %>%
       addProviderTiles("MapBox", layerId = "mapbox_id",options = providerTileOptions(id = mapbox_tileset, minZoom = 8, maxNativeZoom=24, maxZoom = 24, accessToken = MAPBOX_ACCESS_TOKEN)) %>%
       addCircles(data = focal_position, stroke = T, fillOpacity = 0, radius = .8, color="orange") %>% 
-      addCircles(data=df,stroke = T,fillOpacity = 0.1,radius = 0.5,popup = ~htmlEscape(paste(Date,round(score,2),target_ind,sep=", "))) %>%
+      addCircles(data=df,stroke = T,fillOpacity = 0.1,radius = 0.5,popup = ~htmlEscape(paste(round(sum_top1_s/num_obs_to,2),target_ind,sep=", "))) %>%
       addCircles(data = bird_df, stroke = T, fillOpacity = 0, radius = 0.2, color = ~species_colors(label),
                  popup = ~htmlEscape(paste(round(score,2), bird_id, sep=":"))) %>%
       setView(lng, lat, zoom)
