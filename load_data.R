@@ -28,15 +28,16 @@ year <- sapply(df$event, function(event) str_split(event, "-")[[1]][[1]])
 df <- mutate(df, bird_id = row_number(), year = year)
 
 #Nest predictions
-unzip("data/nest_detections.zip", exdir = "data")
-nestdf <- st_read("data/nest_detections.shp")
-nestdf$Date <- as.Date(nestdf$Date,"%m_%d_%Y")
-nestdf$tileset_id <- construct_id(nestdf$Site,nestdf$Date)
+unzip("data/nest_detections_processed.zip", exdir = "data")
+nestdf <- st_read("data/nest_detections_processed.shp")
+nestdf <- rename(nestdf, target_ind = nest_id) #TODO: Once other things are working global find replace to remove this
+nestdf$first_obs <- as.Date(nestdf$first_obs,"%m_%d_%Y")
+nestdf$last_obs <- as.Date(nestdf$last_obs,"%m_%d_%Y")
 nestdf <- st_centroid(nestdf)
 nestdf <- st_transform(nestdf,4326)
 selected_indices <- nestdf %>%
                 as.data.frame() %>%
-                mutate(site_index = paste(Site,target_ind)) 
+                mutate(site_index = paste(Site,target_ind))
 nestdf <- nestdf %>%
   mutate(site_index = paste(Site,target_ind)) %>%
   inner_join(selected_indices)
