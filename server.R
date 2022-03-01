@@ -184,7 +184,7 @@ shinyServer(function(input, output, session) {
   })
 
   #Default plot
-  output$nest_map<-renderLeaflet(plot_nests(nestdf %>% filter(Site=="Joule") %>% filter(Date==min(Date)),
+  output$nest_map<-renderLeaflet(plot_nests(nestdf %>% filter(Site=="Joule") %>% filter(first_obs <= min(Date)),
                                             df %>% filter(site=="Joule") %>% filter(event==min(event)),
                                             MAPBOX_ACCESS_TOKEN))
   
@@ -204,7 +204,8 @@ shinyServer(function(input, output, session) {
   })
 
   nest_map_date_filter<-reactive({
-    selected_nests<-nestdf %>% filter(Date == input$nest_date)
+    selected_nests <- nestdf %>%
+      filter(first_obs <= input$nest_date, last_obs >= input$nest_date)
     return(selected_nests)
   })
 
@@ -221,7 +222,7 @@ shinyServer(function(input, output, session) {
     min_date <- min(selected_birds$event)
     output$nest_map<-renderLeaflet(
       plot_nests(
-        selected_nests %>% filter(Date==min_date),
+        selected_nests %>% filter(first_obs <= min_date),
         selected_birds %>% filter(event==min_date),
         MAPBOX_ACCESS_TOKEN))
   })
