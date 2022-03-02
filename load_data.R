@@ -30,7 +30,6 @@ df <- mutate(df, bird_id = row_number(), year = year)
 #Nest predictions
 unzip("data/nest_detections_processed.zip", exdir = "data")
 nestdf <- st_read("data/nest_detections_processed.shp")
-nestdf <- rename(nestdf, target_ind = nest_id) #TODO: Once other things are working global find replace to remove this
 nestdf$first_obs <- as.Date(nestdf$first_obs,"%m_%d_%Y")
 nestdf$last_obs <- as.Date(nestdf$last_obs,"%m_%d_%Y")
 nestdf <- st_centroid(nestdf)
