@@ -223,6 +223,7 @@ shinyServer(function(input, output, session) {
     selected_birds <- bird_map_site_filter()
     selected_samples <- samples_site_filter()
     min_date <- min(selected_birds$event)
+    focal_position <<- NULL
     output$nest_map<-renderLeaflet(
       plot_nests(
         selected_nests %>% filter(first_obs <= min_date),
@@ -241,7 +242,7 @@ shinyServer(function(input, output, session) {
                         filter(label %in% input$species)
     mapbox_tileset<-unique(selected_birds$tileset_id)[1]
     selected_nests<-selected_nests %>% filter(nest_id %in% as.numeric(input$nest_ids))
-      update_nests(mapbox_tileset, selected_nests, selected_birds, MAPBOX_ACCESS_TOKEN, focal_position)
+    update_nests(mapbox_tileset, selected_nests, selected_birds, MAPBOX_ACCESS_TOKEN, focal_position)
   })
 
   observeEvent(input$species,{
@@ -256,7 +257,7 @@ shinyServer(function(input, output, session) {
                         filter(label %in% input$species)
     mapbox_tileset<-unique(selected_birds$tileset_id)[1]
     selected_nests<-selected_nests %>% filter(nest_id %in% as.numeric(input$nest_ids))
-      update_nests(mapbox_tileset, selected_nests, selected_birds, MAPBOX_ACCESS_TOKEN, focal_position)
+    update_nests(mapbox_tileset, selected_nests, selected_birds, MAPBOX_ACCESS_TOKEN, focal_position)
   })
 
   observeEvent(input$nest_ids,{
