@@ -35,9 +35,3 @@ nestdf$first_obs <- as.Date(nestdf$first_obs,"%m_%d_%Y")
 nestdf$last_obs <- as.Date(nestdf$last_obs,"%m_%d_%Y")
 nestdf <- st_centroid(nestdf)
 nestdf <- st_transform(nestdf,4326)
-selected_indices <- nestdf %>%
-                as.data.frame() %>%
-                mutate(site_index = paste(Site,target_ind))
-nestdf <- nestdf %>%
-  mutate(site_index = paste(Site,target_ind)) %>%
-  inner_join(selected_indices)
