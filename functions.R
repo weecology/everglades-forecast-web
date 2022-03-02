@@ -178,21 +178,24 @@ update_nests<-function(mapbox_tileset, df, bird_df,
   lng <- focal_position[1]
   lat <- focal_position[2]
   zoom <- 24
-  if (is.null(lng) | is.null(lat) | is.null(zoom) | is.null(focal_position)){    
-    leafletProxy("nest_map")  %>% clearShapes() %>%
-      addProviderTiles("MapBox", layerId = "mapbox_id",options = providerTileOptions(id = mapbox_tileset, minZoom = 8, maxNativeZoom=24, maxZoom = 24, accessToken = MAPBOX_ACCESS_TOKEN)) %>%
-      addCircles(data=df,stroke = T,fillOpacity = 0.1,radius = 0.5,popup = ~htmlEscape(paste(round(sum_top1_s/num_obs_to,2),nest_id,sep=", "))) %>%
-      addCircles(data = bird_df, stroke = T, fillOpacity = 0, radius = 0.2, color = ~species_colors(label),
-                 popup = ~htmlEscape(paste(round(score,2), bird_id, sep=":")))
-  } else {
-    leafletProxy("nest_map")  %>% clearShapes() %>%
-      addProviderTiles("MapBox", layerId = "mapbox_id",options = providerTileOptions(id = mapbox_tileset, minZoom = 8, maxNativeZoom=24, maxZoom = 24, accessToken = MAPBOX_ACCESS_TOKEN)) %>%
-      addCircles(data = focal_position, stroke = T, fillOpacity = 0, radius = .8, color="orange") %>% 
-      addCircles(data=df,stroke = T,fillOpacity = 0.1,radius = 0.5,popup = ~htmlEscape(paste(round(sum_top1_s/num_obs_to,2),nest_id,sep=", "))) %>%
-      addCircles(data = bird_df, stroke = T, fillOpacity = 0, radius = 0.2, color = ~species_colors(label),
-                 popup = ~htmlEscape(paste(round(score,2), bird_id, sep=":"))) %>%
+
+  map <- leafletProxy("nest_map")  %>%
+    clearShapes() %>%
+    addProviderTiles(
+      "MapBox",
+      layerId = "mapbox_id",
+      options = providerTileOptions(id = mapbox_tileset, minZoom = 8, maxNativeZoom=24, maxZoom = 24, accessToken = MAPBOX_ACCESS_TOKEN)
+      )
+  if (!is.null(lng) & !is.null(lat) & !is.null(zoom)) {
+    map <- map %>%
+      addCircles(data = focal_position, stroke = T, fillOpacity = 0, radius = .8, color="orange") %>%
       setView(lng, lat, zoom)
   }
+  map <- map %>%
+    addCircles(data=df,stroke = T,fillOpacity = 0.1,radius = 0.5,popup = ~htmlEscape(paste(round(sum_top1_s/num_obs_to,2),nest_id,sep=", "))) %>%
+    addCircles(data = bird_df, stroke = T, fillOpacity = 0, radius = 0.2, color = ~species_colors(label),
+               popup = ~htmlEscape(paste(round(score,2), bird_id, sep=":")))
+  map
 }
 
 #Construct mapbox url
