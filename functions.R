@@ -172,7 +172,7 @@ plot_nests<-function(df, bird_df, MAPBOX_ACCESS_TOKEN){
   return(m)
 }
 
-update_nests<-function(mapbox_tileset, df, bird_df, field_nests,
+update_nests<-function(mapbox_tileset, df, bird_df,
                        MAPBOX_ACCESS_TOKEN, focal_position = NULL){
   mapbox_tileset<-paste("bweinstein.",mapbox_tileset,sep="")
   lng <- focal_position[1]
