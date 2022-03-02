@@ -103,6 +103,10 @@ shinyServer(function(input, output, session) {
   output$Zooniverse_Predicted_Table<-renderTable(compare_counts(df, selected_boxes))
   
   ###Nest Page###
+
+  # No focal position to start, but will be updated
+  focal_position <- NULL
+
   nest_filter<-reactive({
     #filter based on selection
     to_plot <- nestdf %>% filter(Site==input$nest_site, Year==input$nest_year)
@@ -237,11 +241,7 @@ shinyServer(function(input, output, session) {
                         filter(label %in% input$species)
     mapbox_tileset<-unique(selected_birds$tileset_id)[1]
     selected_nests<-selected_nests %>% filter(nest_id %in% as.numeric(input$nest_ids))
-    if (exists("focal_position")){
       update_nests(mapbox_tileset, selected_nests, selected_birds, MAPBOX_ACCESS_TOKEN, focal_position)
-    } else {
-      update_nests(mapbox_tileset, selected_nests, selected_birds, MAPBOX_ACCESS_TOKEN)
-    }
   })
 
   observeEvent(input$species,{
@@ -256,11 +256,7 @@ shinyServer(function(input, output, session) {
                         filter(label %in% input$species)
     mapbox_tileset<-unique(selected_birds$tileset_id)[1]
     selected_nests<-selected_nests %>% filter(nest_id %in% as.numeric(input$nest_ids))
-    if (exists("focal_position")){
       update_nests(mapbox_tileset, selected_nests, selected_birds, MAPBOX_ACCESS_TOKEN, focal_position)
-    } else {
-      update_nests(mapbox_tileset, selected_nests, selected_birds, MAPBOX_ACCESS_TOKEN)
-    }
   })
 
   observeEvent(input$nest_ids,{
