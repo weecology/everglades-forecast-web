@@ -170,15 +170,14 @@ shinyServer(function(input, output, session) {
                 options = list(`actions-box` = TRUE))
   })
 
-  #Reactive UI selector for Field Nest IDs
-  output$field_nest_samp_id_selector <- renderUI({
+  #Reactive UI selector for Samples IDs for evaluation/improvement experiments
+  output$samp_id_selector <- renderUI({
     selected_site <- as.character(input$nest_site)
     selected_year <- input$nest_year
-    selected_field_nests <- field_nests %>% filter(site==selected_site, year==selected_year)
-    available_nests <- str_sort(unique(selected_field_nests$sample_id), numeric = TRUE)
-    pickerInput(inputId = "field_nest_samp_ids",
-                label = "Field Nest IDs",
-                multiple = TRUE,
+    selected_samples <- samples %>% filter(site==selected_site, year==selected_year)
+    available_nests <- str_sort(unique(selected_samples$sample_id), numeric = TRUE)
+    pickerInput(inputId = "samp_ids",
+                label = "Sample IDs",
                 choices = available_nests,
                 options = list(`actions-box` = TRUE))
   })
@@ -198,9 +197,9 @@ shinyServer(function(input, output, session) {
     return(selected_birds)
   })
 
-  field_nests_site_filter <- reactive({
-    selected_field_nests <- field_nests %>% filter(site == input$nest_site)
-    return(selected_field_nests)
+  samples_site_filter <- reactive({
+    selected_samples <- samples %>% filter(site == input$nest_site)
+    return(selected_samples)
   })
 
   nest_map_date_filter<-reactive({
@@ -218,7 +217,7 @@ shinyServer(function(input, output, session) {
   observeEvent(input$nest_site,{
     selected_nests<-nest_map_site_filter()
     selected_birds <- bird_map_site_filter()
-    selected_field_nests <- field_nests_site_filter()
+    selected_samples <- samples_site_filter()
     min_date <- min(selected_birds$event)
     output$nest_map<-renderLeaflet(
       plot_nests(
@@ -230,7 +229,7 @@ shinyServer(function(input, output, session) {
   observeEvent(input$nest_date,{
     selected_nests<-nest_map_date_filter()
     selected_birds <- bird_map_date_filter()
-    selected_field_nests <- field_nests_site_filter() %>%
+    selected_samples <- samples_site_filter() %>%
       filter(year ==input$nest_year)
     selected_nests<-selected_nests %>% filter(Site==input$nest_site)
     selected_birds <- selected_birds %>%
@@ -239,9 +238,9 @@ shinyServer(function(input, output, session) {
     mapbox_tileset<-unique(selected_birds$tileset_id)[1]
     selected_nests<-selected_nests %>% filter(nest_id %in% as.numeric(input$nest_ids))
     if (exists("focal_position")){
-      update_nests(mapbox_tileset, selected_nests, selected_birds, selected_field_nests, MAPBOX_ACCESS_TOKEN, focal_position)
+      update_nests(mapbox_tileset, selected_nests, selected_birds, MAPBOX_ACCESS_TOKEN, focal_position)
     } else {
-      update_nests(mapbox_tileset, selected_nests, selected_birds, selected_field_nests, MAPBOX_ACCESS_TOKEN)
+      update_nests(mapbox_tileset, selected_nests, selected_birds, MAPBOX_ACCESS_TOKEN)
     }
   })
 
@@ -249,7 +248,7 @@ shinyServer(function(input, output, session) {
     req(input$nest_date)
     selected_nests <- nest_map_date_filter()
     selected_birds <- bird_map_date_filter()
-    selected_field_nests <- field_nests_site_filter() %>%
+    selected_samples <- samples_site_filter() %>%
       filter(year == input$nest_year)
     selected_nests <- selected_nests %>% filter(Site==input$nest_site)
     selected_birds <- selected_birds %>%
@@ -258,16 +257,16 @@ shinyServer(function(input, output, session) {
     mapbox_tileset<-unique(selected_birds$tileset_id)[1]
     selected_nests<-selected_nests %>% filter(nest_id %in% as.numeric(input$nest_ids))
     if (exists("focal_position")){
-      update_nests(mapbox_tileset, selected_nests, selected_birds, selected_field_nests, MAPBOX_ACCESS_TOKEN, focal_position)
+      update_nests(mapbox_tileset, selected_nests, selected_birds, MAPBOX_ACCESS_TOKEN, focal_position)
     } else {
-      update_nests(mapbox_tileset, selected_nests, selected_birds, selected_field_nests, MAPBOX_ACCESS_TOKEN)
+      update_nests(mapbox_tileset, selected_nests, selected_birds, MAPBOX_ACCESS_TOKEN)
     }
   })
 
   observeEvent(input$nest_ids,{
     selected_nests<-nest_map_date_filter()
     selected_birds <- bird_map_date_filter()
-    selected_field_nests <- field_nests_site_filter() %>%
+    selected_samples <- samples_site_filter() %>%
       filter(year == input$nest_year)
     selected_nests<-selected_nests %>% filter(Site==input$nest_site)
     selected_birds <- selected_birds %>%
@@ -275,7 +274,7 @@ shinyServer(function(input, output, session) {
                         filter(label %in% input$species)
     mapbox_tileset<-unique(selected_birds$tileset_id)[1]
     selected_nests<-selected_nests %>% filter(nest_id %in% as.numeric(input$nest_ids))
-    update_nests(mapbox_tileset, selected_nests, selected_birds, selected_field_nests, MAPBOX_ACCESS_TOKEN)
+    update_nests(mapbox_tileset, selected_nests, selected_birds, MAPBOX_ACCESS_TOKEN)
   })
 
   observeEvent(input$bird_ids,{
@@ -285,9 +284,9 @@ shinyServer(function(input, output, session) {
     selected_birds <- bird_map_date_filter() %>%
       filter(site == input$nest_site) %>%
       filter(label %in% input$species)
-    selected_field_nests <- field_nests_site_filter() %>%
+    selected_samples <- samples_site_filter() %>%
       filter(year == input$nest_year) %>%
-      filter(sample_id %in% as.numeric(input$field_nest_samp_ids))
+      filter(sample_id %in% as.numeric(input$samp_ids))
     mapbox_tileset<-unique(selected_birds$tileset_id)[1]
 
     if (length(input$bird_ids) == 1){
@@ -300,27 +299,26 @@ shinyServer(function(input, output, session) {
     update_nests(mapbox_tileset,
                   selected_nests,
                   selected_birds,
-                  selected_field_nests,
                   MAPBOX_ACCESS_TOKEN,
                   focal_position)
   })
 
-  observeEvent(input$field_nest_samp_ids,{
+  observeEvent(input$samp_ids,{
     selected_nests <- nest_map_date_filter() %>%
       filter(Site==input$nest_site) %>%
       filter(nest_id %in% as.numeric(input$nest_ids))
     selected_birds <- bird_map_date_filter() %>%
       filter(site == input$nest_site) %>%
       filter(label %in% input$species)
-    selected_field_nests <- field_nests_site_filter() %>%
+    selected_samples <- samples_site_filter() %>%
       filter(year == input$nest_year) %>%
-      filter(sample_id %in% as.numeric(input$field_nest_samp_ids))
+      filter(sample_id %in% as.numeric(input$samp_ids))
     mapbox_tileset <- unique(selected_birds$tileset_id)[1]
 
-    if (length(input$field_nest_samp_ids) == 1){
-      focal_field_nest <- selected_field_nests %>%
-        filter(sample_id == input$field_nest_samp_ids)
-      focal_position <<- focal_field_nest$geometry[[1]]
+    if (length(input$samp_ids) == 1){
+      focal_sample <- selected_samples %>%
+        filter(sample_id == input$samp_ids)
+      focal_position <<- focal_sample$geometry[[1]]
     } else {
       focal_position <- NULL
     }
@@ -328,7 +326,6 @@ shinyServer(function(input, output, session) {
     update_nests(mapbox_tileset,
       selected_nests,
       selected_birds,
-      selected_field_nests,
       MAPBOX_ACCESS_TOKEN,
       focal_position)
   })
