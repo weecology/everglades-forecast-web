@@ -172,7 +172,7 @@ plot_nests<-function(df, bird_df, MAPBOX_ACCESS_TOKEN){
   return(m)
 }
 
-update_nests<-function(mapbox_tileset, df, bird_df,
+update_nests<-function(mapbox_tileset, df, bird_df, show_nests, show_birds,
                        MAPBOX_ACCESS_TOKEN, focal_position = NULL){
   mapbox_tileset<-paste("bweinstein.",mapbox_tileset,sep="")
   lng <- focal_position[1]
@@ -191,10 +191,15 @@ update_nests<-function(mapbox_tileset, df, bird_df,
       addCircles(data = focal_position, stroke = T, fillOpacity = 0, radius = .8, color="orange") %>%
       setView(lng, lat, zoom)
   }
-  map <- map %>%
-    addCircles(data=df,stroke = T,fillOpacity = 0.1,radius = 0.5,popup = ~htmlEscape(paste(round(sum_top1_s/num_obs_to,2),nest_id,sep=", "))) %>%
-    addCircles(data = bird_df, stroke = T, fillOpacity = 0, radius = 0.2, color = ~species_colors(label),
-               popup = ~htmlEscape(paste(round(score,2), bird_id, sep=":")))
+  if (show_nests) {
+    map <- map %>%
+     addCircles(data=df,stroke = T,fillOpacity = 0.1,radius = 0.5,popup = ~htmlEscape(paste(round(sum_top1_s/num_obs_to,2),nest_id,sep=", ")))
+  }
+  if (show_birds) {
+    map <- map %>%
+      addCircles(data = bird_df, stroke = T, fillOpacity = 0, radius = 0.2, color = ~species_colors(label),
+                popup = ~htmlEscape(paste(round(score,2), bird_id, sep=":")))
+  }
   map
 }
 
