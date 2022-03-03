@@ -11,7 +11,7 @@ selected_boxes <- filter_annotations(raw_data)
 colonies <- st_read(
   "data/colonies.csv",
   options = c("X_POSSIBLE_NAMES=longitude","Y_POSSIBLE_NAMES=latitude"))
-field_nests <- st_read(
+samples <- st_read(
   "https://raw.githubusercontent.com/weecology/EvergladesWadingBird/main/Nesting/field_nest_sample_locations.csv",
   options = c("X_POSSIBLE_NAMES=long", "Y_POSSIBLE_NAMES=lat"),
   crs = 4326)
