@@ -165,7 +165,7 @@ shinyServer(function(input, output, session) {
     available_nests <- str_sort(unique(selected_samples$sample_id), numeric = TRUE)
     pickerInput(inputId = "samp_ids",
                 label = "Sample IDs",
-                choices = available_nests,
+                choices = c("", available_nests),
                 options = list(`actions-box` = TRUE))
   })
 
@@ -304,7 +304,7 @@ shinyServer(function(input, output, session) {
       filter(sample_id %in% as.numeric(input$samp_ids))
     mapbox_tileset <- unique(selected_birds$tileset_id)[1]
 
-    if (length(input$samp_ids) == 1){
+    if (input$samp_ids != "") {
       focal_sample <- selected_samples %>%
         filter(sample_id == input$samp_ids)
       focal_position <<- focal_sample$geometry[[1]]
