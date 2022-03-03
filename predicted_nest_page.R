@@ -9,8 +9,11 @@ predicted_nest_page<-function(nestdf){
       uiOutput('nest_year_selector'),
       uiOutput("species_selector"),
       #plotOutput("nest_history_plot", height=400,width=700),
-      uiOutput('nest_id_selector'),
-      uiOutput('bird_id_selector'),
+      h5("Show:"),
+      fluidRow(
+        column(width = 1, uiOutput('bird_selector')),
+        column(width = 1, uiOutput('nest_selector'))
+      ),
       uiOutput('samp_id_selector'),
       uiOutput('date_slider'),
       leafletOutput("nest_map", height=800,width=900)
