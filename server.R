@@ -128,8 +128,7 @@ shinyServer(function(input, output, session) {
     selected_site <- as.character(input$nest_site)
     selected_year <- input$nest_year
     selected_df <- df %>%
-      filter(site==selected_site, year==selected_year) %>%
-      filter(event < "2021-05-05") # Filter out dates where field nests are flagged to avoid indicating which field nests are real
+      filter(site==selected_site, year==selected_year)
     available_dates<-sort(unique(selected_df$event))
     sliderTextInput(inputId = "nest_date","Select Date",choices=available_dates)
   })
