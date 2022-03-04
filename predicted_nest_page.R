@@ -1,10 +1,11 @@
 predicted_nest_page<-function(nestdf){
   renderUI({
     fluidPage(
-      titlePanel("Predicted Nest Detections"),
-      p("Using a deep learning neural network, we predicted the location and number of individual birds in drone imagery aquired over the colonies. We then overlayed subsequent detections from each week of surveys to detect birds at the same location each week. \n Multiple detections of a bird at the same location is used as a proxy for nest location. Here we use three intersecting bird detections over the survey season as evidence of nest detection."),
-      selectInput("nest_site","Site",choices = unique(nestdf$Site),selected="StartMel"),
-      uiOutput('nest_year_selector'),
+      titlePanel("Predicted Bird & Nest Detections"),
+      fluidRow(
+        column(width = 2, selectInput("nest_site","Site",choices = unique(nestdf$Site),selected="StartMel")),
+        column(width = 2, uiOutput('nest_year_selector'))
+      ),
       uiOutput("species_selector"),
       h5("Show:"),
       fluidRow(
