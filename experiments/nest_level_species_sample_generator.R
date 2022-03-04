@@ -20,6 +20,7 @@ samples <- nests %>%
   as.data.frame() %>%
   group_by(site, year, species) %>%
   slice(sample(1:10)) %>%
+  group_by(site, year) %>%
   slice(sample(1:n())) %>% # Randomize order to not give clues to species ID
   ungroup() %>%
   mutate(sample_id = seq_len(n())) %>%
