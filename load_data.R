@@ -8,13 +8,7 @@ min_confidence <- 0.4
 #Load data
 raw_data <- load_classifications()
 selected_boxes <- filter_annotations(raw_data)
-colonies <- st_read(
-  "data/colonies.csv",
-  options = c("X_POSSIBLE_NAMES=longitude","Y_POSSIBLE_NAMES=latitude"))
-samples <- st_read(
-  "./experiments/no_experiment.csv",
-  options = c("X_POSSIBLE_NAMES=long", "Y_POSSIBLE_NAMES=lat"),
-  crs = 4326)
+colonies <- selected_boxes %>% group_by(site) %>% slice(1) %>% st_centroid() %>% st_transform(4326)
 
 #Predictions
 unzip("data/PredictedBirds.zip", exdir = "data")

@@ -10,12 +10,8 @@ library(shinythemes)
 
 # Define UI for application that draws a histogram
 shinyUI(fluidPage(theme = shinytheme("readable"),
-                  
                   #Navbar to each page
                   navbarPage("Everglades Wading Birds",
-                             tabPanel("Zooniverse",uiOutput('landing')),
-                             tabPanel("Time Series",uiOutput('time')),
                              tabPanel("Predicted Counts",uiOutput('predicted')),
-                             tabPanel("Predicted Nests",uiOutput('predicted_nests')),
                              tabPanel("About",uiOutput('about'))
                   )))
