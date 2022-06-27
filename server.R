@@ -33,10 +33,29 @@ shinyServer(function(input, output, session) {
     leafletProxy("map", data=new_map_data) %>% clearMarkers() %>% addMarkers(popup=~site)
   })
   
-  ##Prediction page##
-  prediction_filter<-reactive({
+  map_filter<-reactive({
     #filter based on selection
-    to_plot <- df %>% filter(tileset_id==input$prediction_tileset) 
+    if(is.null(input$prediction_site)){
+      return(colonies)
+    }
+    
+    map_data <- colonies %>% filter(site==input$prediction_site)
+    return(map_data)
+  })
+  
+  ##Prediction panel##
+  prediction_filter<-reactive({
+    if(is.null(input$mapbox_date)){
+      mapbox_date = "2020-02-24"
+    } else{
+      mapbox_date = input$mapbox_date
+    }
+    
+    #filter based on selection
+    print(paste("mapbox date is:", mapbox_date))
+    print(paste("selected site is:", site_name_filter()))
+    
+    to_plot <- df %>% filter(site==site_name_filter(), event==mapbox_date) 
     return(to_plot)
   })
   
@@ -44,13 +63,12 @@ shinyServer(function(input, output, session) {
     return(input$prediction_site)
   })
   
-  map_filter<-reactive({
-    #filter based on selection
-    if(is.null(input$prediction_site)){
-      return(colonies)
-    }
-    map_data <- colonies %>% filter(site==input$prediction_site)
-    return(map_data)
+  output$date_slider = renderUI({
+    print(paste("selected_size is:",site_name_filter()))
+    selected_df <- df %>%
+      filter(site==site_name_filter())
+    available_dates<-sort(unique(selected_df$event))
+    sliderTextInput(inputId = "mapbox_date","Select Date",choices=available_dates)
   })
   
   output$predicted_time_plot<-renderPlot(time_predictions(df, site_name_filter(),species=input$prediction_species))
