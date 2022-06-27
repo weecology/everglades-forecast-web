@@ -41,23 +41,18 @@ shinyServer(function(input, output, session) {
   })
   
   site_name_filter<-reactive({
-    #filter based on selection
-    current_name <- df %>% filter(tileset_id==input$prediction_tileset) %>% select(site)
-    return(current_name$site[1])
+    return(input$prediction_site)
   })
   
   map_filter<-reactive({
     #filter based on selection
-    if(is.null(input$prediction_tileset)){
+    if(is.null(input$prediction_site)){
       return(colonies)
-    } else{
-    current_name <- df %>% filter(tileset_id==input$prediction_tileset) %>% select(site)
-    selected_site <- current_name$site[1]
-    map_data <- colonies %>% filter(site==selected_site)
+    }
+    map_data <- colonies %>% filter(site==input$prediction_site)
     return(map_data)
-  }})
+  })
   
-  
-  output$predicted_time_plot<-renderPlot(time_predictions(df, site_name_filter()))
+  output$predicted_time_plot<-renderPlot(time_predictions(df, site_name_filter(),species=input$prediction_species))
   output$sample_prediction_map<-renderLeaflet(plot_predictions(df=prediction_filter(),MAPBOX_ACCESS_TOKEN))
 })
