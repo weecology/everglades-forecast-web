@@ -85,10 +85,18 @@ plot_predictions<-function(df, MAPBOX_ACCESS_TOKEN){
   return(m)
 }
 
-time_predictions<-function(df, select_site){
-  g <- df %>% filter(site==select_site) %>% group_by(site,event, year) %>% summarize(n=n())
-  ggplot(g,aes(x=event,y=n)) + geom_point() + geom_line(aes(color=year)) + labs(y="Predicted Birds",x="Date") + theme(text = element_text(size=20))
-}
+time_predictions<-function(df, select_site, species=NA){
+  print(species)
+  if(is.null(species)){
+    g <- df %>% filter(site==select_site) %>% group_by(site,event, year) %>% summarize(n=n())
+    ggplot(g,aes(x=event,y=n)) + geom_point() + geom_line(aes(color=year)) + labs(y="Predicted Birds",x="Date") + theme(text = element_text(size=20))
+  }else{
+    g <- df %>% filter(site==select_site, label %in% species) %>% group_by(site,event, year, label) %>% summarize(n=n())
+    ggplot(g,aes(x=event,y=n)) + geom_point() + 
+      geom_line(aes(color=label,fill=year)) + 
+      theme(text = element_text(size=20)) + labs(x="Date",color="Species", y="Detected Birds")
+  }
+  }
 
 species_colors <- colorFactor(palette = c("yellow", "blue",
                                           "#ff007f", "brown",
