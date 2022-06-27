@@ -81,20 +81,31 @@ plot_predictions<-function(df, MAPBOX_ACCESS_TOKEN){
   
   m<-leaflet(data=df) %>% 
     addProviderTiles("MapBox", options = providerTileOptions(id = mapbox_tileset, minZoom = 8, maxNativeZoom=24, maxZoom = 24, accessToken = MAPBOX_ACCESS_TOKEN)) %>%
-    addCircles(stroke = T,fillOpacity = 0.1,radius = 0.25,popup = ~htmlEscape(paste(label,round(score,2),sep=":")))
+    addCircles(
+      stroke = T,
+      fillOpacity = 0.1,
+      radius = 0.25,
+      popup = ~htmlEscape(paste(label,round(score,2),sep=":")),
+      color = ~species_colors(label))
   return(m)
 }
 
 time_predictions<-function(df, select_site, species=NA){
-  print(species)
   if(is.null(species)){
     g <- df %>% filter(site==select_site) %>% group_by(site,event, year) %>% summarize(n=n())
-    ggplot(g,aes(x=event,y=n)) + geom_point() + geom_line(aes(color=year)) + labs(y="Predicted Birds",x="Date") + theme(text = element_text(size=20))
+    ggplot(g,aes(x=event,y=n)) +
+      geom_point() + 
+      geom_line() +
+      labs(y="Detected Birds",x="Date") +
+      theme(text = element_text(size=20)) + facet_wrap(nrow=1, ~year, scales = "free_x")
   }else{
     g <- df %>% filter(site==select_site, label %in% species) %>% group_by(site,event, year, label) %>% summarize(n=n())
-    ggplot(g,aes(x=event,y=n)) + geom_point() + 
-      geom_line(aes(color=label,fill=year)) + 
-      theme(text = element_text(size=20)) + labs(x="Date",color="Species", y="Detected Birds")
+    ggplot(g,aes(x=event,y=n)) +
+      geom_point() + 
+      geom_line(aes(color=label)) + 
+      theme(text = element_text(size=20)) +
+      labs(x="Date",color="Species", y="Detected Birds") + 
+      facet_wrap(nrow=1, ~year, scales = "free_x")
   }
   }
 
