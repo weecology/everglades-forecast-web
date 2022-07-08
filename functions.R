@@ -71,7 +71,7 @@ plot_annotations<-function(selected_boxes, MAPBOX_ACCESS_TOKEN){
   
   m<-leaflet(data=selected_centroids) %>%
     addProviderTiles("MapBox", options = providerTileOptions(id = mapbox_tileset, minZoom = 8, maxNativeZoom=24, maxZoom = 24, accessToken = MAPBOX_ACCESS_TOKEN)) %>%
-    addCircles(stroke = T,color=~pal(species),fillOpacity = 0.1,radius = 0.25,popup = ~htmlEscape(label))
+    addCircles(stroke = T,color=~pal(species),fillOpacity = 0.1,popup = ~htmlEscape(label))
   return(m)
 }
 
@@ -81,31 +81,35 @@ plot_predictions<-function(df, MAPBOX_ACCESS_TOKEN){
   
   m<-leaflet(data=df) %>% 
     addProviderTiles("MapBox", options = providerTileOptions(id = mapbox_tileset, minZoom = 8, maxNativeZoom=24, maxZoom = 24, accessToken = MAPBOX_ACCESS_TOKEN)) %>%
-    addCircles(
+    addPolygons(
       stroke = T,
       fillOpacity = 0.1,
-      radius = 0.25,
       popup = ~htmlEscape(paste(label,round(score,2),sep=":")),
       color = ~species_colors(label))
   return(m)
 }
 
-time_predictions<-function(df, select_site, species=NA){
-  if(is.null(species)){
+time_predictions<-function(df, select_site, species='All', selected_event=NA){
+  print(paste("Species is", species))
+  if(species=="All"){
     g <- df %>% filter(site==select_site) %>% group_by(site,event, year) %>% summarize(n=n())
     ggplot(g,aes(x=event,y=n)) +
-      geom_point() + 
+      geom_point(aes(color=g$event==selected_event), size=3.5) + 
       geom_line() +
       labs(y="Detected Birds",x="Date") +
-      theme(text = element_text(size=20)) + facet_wrap(nrow=1, ~year, scales = "free_x")
+      theme(text = element_text(size=20)) + 
+      facet_wrap(nrow=1, ~year, scales = "free_x") + 
+      scale_color_manual(guide='none', values=c("black","red"))
+      
   }else{
     g <- df %>% filter(site==select_site, label %in% species) %>% group_by(site,event, year, label) %>% summarize(n=n())
     ggplot(g,aes(x=event,y=n)) +
-      geom_point() + 
+      geom_point(aes(color=g$event==selected_event), size=3.5) + 
       geom_line(aes(color=label)) + 
       theme(text = element_text(size=20)) +
       labs(x="Date",color="Species", y="Detected Birds") + 
-      facet_wrap(nrow=1, ~year, scales = "free_x")
+      facet_wrap(nrow=1, ~year, scales = "free_x") + 
+      scale_color_manual(guide='none', values=c("black","red"))
   }
   }
 
