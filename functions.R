@@ -90,6 +90,7 @@ plot_predictions<-function(df, MAPBOX_ACCESS_TOKEN){
 }
 
 time_predictions<-function(df, select_site, species='All', selected_event=NA){
+  df<-data_frame(df)
   print(paste("Species is", species))
   if(species=="All"){
     g <- df %>% filter(site==select_site) %>% group_by(site,event, year) %>% summarize(n=n())
