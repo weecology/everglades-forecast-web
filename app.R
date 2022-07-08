@@ -7,6 +7,7 @@ library(shinyWidgets)
 library(htmltools)
 library(sf)
 library(stringr)
+library(shinythemes)
 
 #Source page UIs
 source("landing_page.R")
@@ -17,15 +18,11 @@ source("predicted_nest_page.R")
 source("functions.R")
 source("load_data.R")
 
-#
-library(shiny)
-library(shinythemes)
-
 #Define thumbnail dir
 #Source additional pages
 
 # Define UI for application that draws a histogram
-ui <- fluidPage((theme = shinytheme("readable"),
+ui <- fluidPage(theme = shinytheme("readable"),
                   
                   #Navbar to each page
                   navbarPage("Everglades Wading Birds",
@@ -34,10 +31,11 @@ ui <- fluidPage((theme = shinytheme("readable"),
                              tabPanel("Predicted Counts",uiOutput('predicted')),
                              tabPanel("Predicted Nests",uiOutput('predicted_nests')),
                              tabPanel("About",uiOutput('about'))
-                  )
+                  ))
 
 # Define server logic required
 server <- function(input, output) {
+
   output$zooniverse_anotation<-renderPlot(zooniverse_complete())
 
   #Setmapbox key
