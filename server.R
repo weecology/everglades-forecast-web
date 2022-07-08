@@ -55,12 +55,25 @@ shinyServer(function(input, output, session) {
     print(paste("mapbox date is:", mapbox_date))
     print(paste("selected site is:", site_name_filter()))
     
-    to_plot <- df %>% filter(site==site_name_filter(), event==mapbox_date) 
+    selected_species = species_name_filter()
+    if(selected_species == "All"){
+      to_plot <- df %>% filter(site==site_name_filter(), event==mapbox_date) 
+    } else{
+      to_plot <- df %>% filter(site==site_name_filter(), event==mapbox_date, label==species_name_filter()) 
+    }
     return(to_plot)
   })
   
   site_name_filter<-reactive({
     return(input$prediction_site)
+  })
+  
+  species_name_filter<-reactive({
+    if(input$prediction_species=="All"){
+      return("All")
+    } else{
+      return(input$prediction_species)
+    }
   })
   
   output$date_slider = renderUI({
@@ -71,6 +84,6 @@ shinyServer(function(input, output, session) {
     sliderTextInput(inputId = "mapbox_date","Select Date",choices=available_dates)
   })
   
-  output$predicted_time_plot<-renderPlot(time_predictions(df, site_name_filter(),species=input$prediction_species))
+  output$predicted_time_plot<-renderPlot(time_predictions(df, site_name_filter(),species=species_name_filter(), selected_event=input$mapbox_date))
   output$sample_prediction_map<-renderLeaflet(plot_predictions(df=prediction_filter(),MAPBOX_ACCESS_TOKEN))
 })
