@@ -17,6 +17,25 @@ source("predicted_nest_page.R")
 source("functions.R")
 source("load_data.R")
 
+#
+library(shiny)
+library(shinythemes)
+
+#Define thumbnail dir
+#Source additional pages
+
+# Define UI for application that draws a histogram
+ui <- fluidPage((theme = shinytheme("readable"),
+                  
+                  #Navbar to each page
+                  navbarPage("Everglades Wading Birds",
+                             tabPanel("Zooniverse",uiOutput('landing')),
+                             tabPanel("Time Series",uiOutput('time')),
+                             tabPanel("Predicted Counts",uiOutput('predicted')),
+                             tabPanel("Predicted Nests",uiOutput('predicted_nests')),
+                             tabPanel("About",uiOutput('about'))
+                  )
+
 # Define server logic required
 server <- function(input, output) {
   output$zooniverse_anotation<-renderPlot(zooniverse_complete())
@@ -320,7 +339,7 @@ server <- function(input, output) {
       MAPBOX_ACCESS_TOKEN,
       focal_position)
   })
-})
+}
 
 # Run the application 
 shinyApp(ui = ui, server = server)
