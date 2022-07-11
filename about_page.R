@@ -40,7 +40,7 @@ about_page <- function() {
       h3("Everglades Field Team"),
       h5("Lindsey Garner, Research Coordinator, Everglades Projects"),
       HTML(
-        "<img src=https://github.com/weecology/website/blob/main/content/authors/lindsey-Garner/avatar.jpeg?raw=true>"
+        "<img src=https://github.com/weecology/website/blob/main/content/authors/lindsey-Garner/ggggggggggggggggggggggggggggggggggggavatar.jpeg?raw=true>"
       ),
       renderText(
         "Lindsey Garner is the Research Coordinator for the South Florida Wading Bird Monitoring Project.
