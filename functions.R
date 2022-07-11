@@ -9,6 +9,7 @@ library(htmltools)
 library(tidyr)
 
 # Site map
+h <- c("gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg")
 create_map <- function(colonies) {
   m <-
     leaflet(data = colonies) %>%
