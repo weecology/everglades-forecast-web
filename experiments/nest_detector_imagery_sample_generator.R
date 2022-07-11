@@ -7,7 +7,7 @@ library(stringr)
 unzip("data/nest_detections_processed.zip", exdir = "data")
 detector_nests <- st_read("data/nest_detections_processed.shp") %>%
   st_transform(4326) %>%
-  st_centroid() #Force values to points
+  st_centroid() # Force values to points
 detector_nest_coords <- st_coordinates(detector_nests) %>%
   as.data.frame() %>%
   select(lat = Y, long = X)
@@ -24,9 +24,9 @@ sample_locations <- read.csv("experiments/nest_detector_imagery_sample_locations
 unzip("data/PredictedBirds.zip", exdir = "data")
 
 birds <- st_read("data/PredictedBirds.shp") %>%
-  filter(score > 0.3) %>% #Make sure there's a good chance we're focusing on an area with a bird
+  filter(score > 0.3) %>% # Make sure there's a good chance we're focusing on an area with a bird
   st_transform(4326) %>%
-  st_centroid() #Force values to points
+  st_centroid() # Force values to points
 bird_coords <- st_coordinates(birds) %>%
   as.data.frame() %>%
   select(lat = Y, long = X)
@@ -77,7 +77,7 @@ for (i in seq_len(nrow(surveys))) {
   samp_count_yes <- nrow(filter(focal_sample_locations, known_nest == "yes"))
   samp_count_no <- nrow(filter(focal_sample_locations, known_nest == "no"))
   if (samp_count_yes == 0 & samp_count_no == 0) {
-    new_samp_locs <- get_new_samp_locs(focal_birds, focal_nests, site, year, samples=25)
+    new_samp_locs <- get_new_samp_locs(focal_birds, focal_nests, site, year, samples = 25)
     samp_locs_updated <- rbind(samp_locs_updated, new_samp_locs)
     changes_made <- TRUE
   } else if (samp_count_yes != nest_count | samp_count_no != nest_count) {
@@ -85,7 +85,7 @@ for (i in seq_len(nrow(surveys))) {
   }
 }
 
-if (changes_made){
+if (changes_made) {
   message("Updating sampling file with for new detector nests")
   write.csv(samp_locs_updated, "experiments/nest_detector_imagery_sample_locations.csv", row.names = FALSE)
 } else {
