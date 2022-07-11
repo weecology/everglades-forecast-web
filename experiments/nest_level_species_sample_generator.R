@@ -26,4 +26,4 @@ samples <- nests %>%
   mutate(sample_id = seq_len(n())) %>%
   select(site, year, sample_id, nest_id, species, lat, long)
 
-write.csv(samples, "./experiments/nest_level_species_sample_locations.csv", row.names=FALSE)
+write.csv(samples, "./experiments/nest_level_species_sample_locations.csv", row.names = FALSE)
