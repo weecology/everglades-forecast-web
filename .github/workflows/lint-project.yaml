@@ -25,5 +25,6 @@ jobs:
         shell: Rscript {0}
 
       - name: Lint root directory
-        run: lintr::lint_dir()
-        shell: Rscript {0}
+        run: Rscript -e "errors <- lintr::lint_dir(); print(errors); quit(save = 'no', status = length(errors))"
+      
+
