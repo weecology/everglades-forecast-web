@@ -132,7 +132,7 @@ time_predictions <-
            selected_event = NA) {
     df <- data_frame(df)
     print(paste("Species is", species))
-    if (species == "All") {
+    if ("All" %in% species) {
       g <-
         df %>%
         filter(site == select_site) %>%
@@ -157,13 +157,13 @@ time_predictions <-
           n = n()
         )
       ggplot(g, aes(x = event, y = n)) +
-        geom_point(aes(color = g$event == selected_event), size = 3.5) +
+        geom_point(aes(color = g$event == selected_event, shape=label), size = 3) +
         geom_line(aes(linetype = label)) +
         theme(text = element_text(size = 20)) +
         labs(x = "Date", color = "Species", y = "Detected Birds") +
         facet_wrap(nrow = 1, ~year, scales = "free_x") +
         scale_color_manual(guide = "none", values = c("black", "red")) +
-        scale_linetype(guide="none")
+        scale_shape(guide="none") + scale_linetype(guide="none")
     }
   }
 

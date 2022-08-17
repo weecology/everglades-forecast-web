@@ -85,7 +85,7 @@ server <- function(input, output, session) {
         df %>% filter(
           site == site_name_filter(),
           event == mapbox_date,
-          label == species_name_filter()
+          label %in% species_name_filter()
         )
     }
     return(to_plot)
