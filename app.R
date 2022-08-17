@@ -77,7 +77,7 @@ server <- function(input, output, session) {
     print(paste("selected site is:", site_name_filter()))
 
     selected_species <- species_name_filter()
-    if (selected_species == "All") {
+    if ("All" %in% selected_species) {
       to_plot <-
         df %>% filter(site == site_name_filter(), event == mapbox_date)
     } else {
