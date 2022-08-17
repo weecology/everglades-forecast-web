@@ -86,7 +86,7 @@ plot_annotations <- function(selected_boxes, MAPBOX_ACCESS_TOKEN) {
       "MapBox",
       options = providerTileOptions(
         id = mapbox_tileset,
-        minZoom = 8,
+        minZoom = 18,
         maxNativeZoom = 24,
         maxZoom = 24,
         accessToken = MAPBOX_ACCESS_TOKEN
@@ -110,7 +110,7 @@ plot_predictions <- function(df, MAPBOX_ACCESS_TOKEN) {
       "MapBox",
       options = providerTileOptions(
         id = mapbox_tileset,
-        minZoom = 8,
+        minZoom = 18,
         maxNativeZoom = 24,
         maxZoom = 24,
         accessToken = MAPBOX_ACCESS_TOKEN
