@@ -154,16 +154,16 @@ time_predictions <-
         filter(site == select_site, label %in% species) %>%
         group_by(site, event, year, label) %>%
         summarize(
-          n =
-            n()
+          n = n()
         )
       ggplot(g, aes(x = event, y = n)) +
         geom_point(aes(color = g$event == selected_event), size = 3.5) +
-        geom_line(aes(color = label)) +
+        geom_line(aes(linetype = label)) +
         theme(text = element_text(size = 20)) +
         labs(x = "Date", color = "Species", y = "Detected Birds") +
         facet_wrap(nrow = 1, ~year, scales = "free_x") +
-        scale_color_manual(guide = "none", values = c("black", "red"))
+        scale_color_manual(guide = "none", values = c("black", "red")) +
+        scale_linetype(guide="none")
     }
   }
 
