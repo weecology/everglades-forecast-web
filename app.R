@@ -96,7 +96,7 @@ server <- function(input, output, session) {
   })
 
   species_name_filter <- reactive({
-    if (input$prediction_species == "All") {
+    if ("All" %in% input$prediction_species) {
       return("All")
     } else {
       return(input$prediction_species)
