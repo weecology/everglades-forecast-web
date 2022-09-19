@@ -1,6 +1,6 @@
 #
 # This is the server logic of a Shiny web application. You can run the
-# application by clicking 'Run App' above.
+# application by clicking "Run App" above.
 
 library(shiny)
 library(shinyWidgets)
@@ -14,7 +14,7 @@ source("about_page.R")
 source("forecasts_page.R")
 source("prediction_page.R")
 source("functions.R")
-#source("load_data.R")
+source("load_data.R")
 
 # Define thumbnail dir
 # Source additional pages
@@ -136,7 +136,7 @@ server <- function(input, output, session) {
 
 
   output$pred_obs_Image <- renderImage({
-    filename <- normalizePath(file.path('./forecasts',
+    filename <- normalizePath(file.path("./forecasts",
                               paste0("nb_origin_", input$forecast_origin, ".png")))
 
     # Return a list containing the filename and alt text
@@ -148,7 +148,7 @@ server <- function(input, output, session) {
 
 
   output$greg_Image <- renderImage({
-    filename <- normalizePath(file.path('./forecasts',
+    filename <- normalizePath(file.path("./forecasts",
                               paste0("greg_nb_origin_", input$forecast_origin, ".png")))
 
     # Return a list containing the filename and alt text
@@ -159,7 +159,7 @@ server <- function(input, output, session) {
 
 
   output$wost_Image <- renderImage({
-    filename <- normalizePath(file.path('./forecasts',
+    filename <- normalizePath(file.path("./forecasts",
                               paste0("wost_nb_origin_", input$forecast_origin, ".png")))
 
     # Return a list containing the filename and alt text
@@ -170,7 +170,7 @@ server <- function(input, output, session) {
 
 
   output$whib_Image <- renderImage({
-    filename <- normalizePath(file.path('./forecasts',
+    filename <- normalizePath(file.path("./forecasts",
                               paste0("whib_nb_origin_", input$forecast_origin, ".png")))
 
     # Return a list containing the filename and alt text
@@ -179,10 +179,18 @@ server <- function(input, output, session) {
 
   }, deleteFile = FALSE)
 
-  output$greg_title <- renderText({"GREG Counts"})
-  output$wost_title <- renderText({"WOST Counts"})
-  output$whib_title <- renderText({"WHIB Counts"})
-  output$pred_obs_title <- renderText({"Observed vs. Predicted Counts"})
+  output$greg_title <- renderText({
+    "GREG Counts"
+  })
+  output$wost_title <- renderText({
+    "WOST Counts"
+  })
+  output$whib_title <- renderText({
+    "WHIB Counts"
+  })
+  output$pred_obs_title <- renderText({
+    "Observed vs. Predicted Counts"
+  })
 
 
 }
