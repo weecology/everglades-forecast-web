@@ -11,9 +11,10 @@ library(shinythemes)
 
 # Source page UIs
 source("about_page.R")
+source("forecasts_page.R")
 source("prediction_page.R")
 source("functions.R")
-source("load_data.R")
+#source("load_data.R")
 
 # Define thumbnail dir
 # Source additional pages
@@ -25,9 +26,15 @@ ui <- fluidPage(
   navbarPage(
     "Everglades Wading Birds",
     tabPanel("Species Detection", uiOutput("predicted")),
+    tabPanel("Species Forecasts", uiOutput("forecasts")),
     tabPanel("About", uiOutput("about"))
   )
 )
+
+
+
+
+
 
 # Define server logic required
 server <- function(input, output, session) {
@@ -40,6 +47,7 @@ server <- function(input, output, session) {
   # Create pages
   output$about <- about_page()
   output$predicted <- predicted_page(df)
+  output$forecasts <- forecasts_page()
 
   #### Sidebar Map###
   output$map <- create_map(colonies)
@@ -122,6 +130,61 @@ server <- function(input, output, session) {
     )
   output$sample_prediction_map <-
     renderLeaflet(plot_predictions(df = prediction_filter(), MAPBOX_ACCESS_TOKEN))
+
+
+
+
+
+  output$pred_obs_Image <- renderImage({
+    filename <- normalizePath(file.path('./forecasts',
+                              paste0("nb_origin_", input$forecast_origin, ".png")))
+
+    # Return a list containing the filename and alt text
+    list(src = filename,
+         alt = paste("Observed as a function of predicted for ", input$origin))
+
+  }, deleteFile = FALSE)
+
+
+
+  output$greg_Image <- renderImage({
+    filename <- normalizePath(file.path('./forecasts',
+                              paste0("greg_nb_origin_", input$forecast_origin, ".png")))
+
+    # Return a list containing the filename and alt text
+    list(src = filename,
+         alt = paste("Time series for GREG since ",  input$forecast_origin))
+
+  }, deleteFile = FALSE)
+
+
+  output$wost_Image <- renderImage({
+    filename <- normalizePath(file.path('./forecasts',
+                              paste0("wost_nb_origin_", input$forecast_origin, ".png")))
+
+    # Return a list containing the filename and alt text
+    list(src = filename,
+         alt = paste("Time series for WOST since ",  input$forecast_origin))
+
+  }, deleteFile = FALSE)
+
+
+  output$whib_Image <- renderImage({
+    filename <- normalizePath(file.path('./forecasts',
+                              paste0("whib_nb_origin_", input$forecast_origin, ".png")))
+
+    # Return a list containing the filename and alt text
+    list(src = filename,
+         alt = paste("Time series for WHIB since ",  input$forecast_origin))
+
+  }, deleteFile = FALSE)
+
+  output$greg_title <- renderText({"GREG Counts"})
+  output$wost_title <- renderText({"WOST Counts"})
+  output$whib_title <- renderText({"WHIB Counts"})
+  output$pred_obs_title <- renderText({"Observed vs. Predicted Counts"})
+
+
 }
 
 # Run the application
