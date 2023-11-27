@@ -8,11 +8,13 @@ library(htmltools)
 library(sf)
 library(stringr)
 library(shinythemes)
+library(shinymanager)
 
 # Source page UIs
 source("about_page.R")
 source("forecasts_page.R")
 source("prediction_page.R")
+source("secured_nest_page.R")
 source("functions.R")
 source("load_data.R")
 
@@ -27,11 +29,10 @@ ui <- fluidPage(
     "Everglades Wading Birds",
     tabPanel("Species Detection", uiOutput("predicted")),
     tabPanel("Species Forecasts", uiOutput("forecasts")),
+    tabPanel("Current Nests",uiOutput('current_nests')),
     tabPanel("About", uiOutput("about"))
   )
 )
-
-
 
 
 
@@ -44,10 +45,35 @@ server <- function(input, output, session) {
   readRenviron("source_token.txt")
   MAPBOX_ACCESS_TOKEN <- Sys.getenv("MAPBOX_ACCESS_TOKEN")
 
+  ## Secured Nest Page ##
+  # define some basic credentials (on data.frame)
+  credentials <- data.frame(
+    user = c("shiny", "shinymanager"), # mandatory
+    password = c("azerty", "12345"), # mandatory
+    start = c("2019-04-15"), # optional (all others)
+    expire = c(NA, "2019-12-31"),
+    admin = c(FALSE, TRUE),
+    comment = "Simple and secure authentification mechanism
+  for single ‘Shiny’ applications.",
+    stringsAsFactors = FALSE
+  )
+
   # Create pages
   output$about <- about_page()
   output$predicted <- predicted_page(df)
   output$forecasts <- forecasts_page()
+  output$current_nests<-current_nest_page(df)
+
+  # authentication module
+  auth <- callModule(
+    module = auth_server,
+    id = "auth",
+    check_credentials = check_credentials(credentials)
+  )
+
+  output$res_auth <- renderPrint({
+    reactiveValuesToList(auth)
+  })
 
   #### Sidebar Map###
   output$map <- create_map(colonies)
