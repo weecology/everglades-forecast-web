@@ -122,17 +122,15 @@ plot_predictions <- function(df, MAPBOX_ACCESS_TOKEN) {
 
 time_predictions <- function(df, select_site, selected_species = "All", selected_event = NA) {
   df <- data.frame(df)
-  
+
   # Check if the selected site is "All"
   if (select_site == "All") {
     # Return a blank plot
-    return(
-      ggplot() +
-      geom_blank() +
-      theme_void()
-    )
+    return(ggplot() +
+             geom_blank() +
+             theme_void())
   }
-  
+
   # Grouping by site and event
   if ("All" %in% selected_species) {
     g <- df %>%
@@ -145,7 +143,7 @@ time_predictions <- function(df, select_site, selected_species = "All", selected
       group_by(site, event, year, label) %>%
       summarize(n = n(), .groups = "drop")
   }
-  
+
   # Plotting
   if (nrow(g) > 0) {
     ggplot(g, aes(x = event, y = n)) +
