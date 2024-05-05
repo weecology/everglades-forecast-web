@@ -101,8 +101,7 @@ for (i in seq_len(nrow(field_nest_surveys))) {
       get_new_samp_locs(focal_birds, focal_field_nests, site, year)
     samp_locs_updated <- rbind(samp_locs_updated, new_samp_locs)
     changes_made <- TRUE
-  } else if (samp_count_yes != field_nest_count |
-    samp_count_no != field_nest_count) {
+  } else if (samp_count_yes != field_nest_count | samp_count_no != field_nest_count) {
     stop("Field nest counts and sample counts don't match and sample counts are not zero. Help!")
   }
 }

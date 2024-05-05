@@ -7,7 +7,11 @@ forecasts_page <- function(df) {
           "Forecast Origin",
           min      = 2000,
           max      = 2016,
-          value = 2016, sep = ""), width = 3),
+          value = 2016,
+          sep = ""
+        ),
+        width = 3
+      ),
       mainPanel(
         textOutput("greg_title"),
         imageOutput("greg_Image"),
@@ -18,7 +22,6 @@ forecasts_page <- function(df) {
         textOutput("pred_obs_title"),
         imageOutput("pred_obs_Image")
       )
-
     )
   })
 }
