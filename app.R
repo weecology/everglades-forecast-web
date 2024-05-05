@@ -34,7 +34,7 @@ server <- function(input, output, session) {
   if (file.exists("source_token.txt"))
     readRenviron("source_token.txt")
   MAPBOX_ACCESS_TOKEN = Sys.getenv("MAPBOX_ACCESS_TOKEN")
-  if (is.na(MAPBOX_ACCESS_TOKEN) || MAPBOX_ACCESS_TOKEN == '')
+  if (is.na(MAPBOX_ACCESS_TOKEN) || MAPBOX_ACCESS_TOKEN == "")
     paste("Set MAPBOX ACCESS TOKEN,", "Refer to the README.")
 
   # Create pages
@@ -100,7 +100,7 @@ server <- function(input, output, session) {
     return(to_plot)
   })
 
-output$date_slider <- renderUI({
+  output$date_slider <- renderUI({
     selected_site <- site_name_filter()
     selected_df <- df %>% filter(site == selected_site)
     available_dates <- sort(unique(selected_df$event))
@@ -125,7 +125,7 @@ output$date_slider <- renderUI({
         selected = selected_date
       )
     }
-})
+  })
 
   output$predicted_time_plot <-
     renderPlot(
@@ -136,51 +136,70 @@ output$date_slider <- renderUI({
         selected_event = input$mapbox_date
       )
     )
+
   output$sample_prediction_map <-
     renderLeaflet(plot_predictions(df = prediction_filter(), MAPBOX_ACCESS_TOKEN))
 
   output$pred_obs_Image <- renderImage({
-    filename <- normalizePath(file.path("./forecasts",
-                              paste0("nb_origin_", input$forecast_origin, ".png")))
+    filename <- normalizePath(file.path(
+      "./forecasts",
+      paste0("nb_origin_", input$forecast_origin, ".png")
+    ))
     # Return a list containing the filename and alt text
-    list(src = filename,
-         alt = paste("Observed as a function of predicted for ", input$origin))
+    list(
+      src = filename,
+      alt = paste("Observed as a function of predicted for ", input$origin)
+    )
   }, deleteFile = FALSE)
 
-
   output$greg_Image <- renderImage({
-    filename <- normalizePath(file.path("./forecasts",
-                              paste0("greg_nb_origin_", input$forecast_origin, ".png")))
+    filename <- normalizePath(file.path(
+      "./forecasts",
+      paste0("greg_nb_origin_", input$forecast_origin, ".png")
+    ))
     # Return a list containing the filename and alt text
-    list(src = filename,
-         alt = paste("Time series for GREG since ",  input$forecast_origin))
+    list(
+      src = filename,
+      alt = paste("Time series for GREG since ",  input$forecast_origin)
+    )
   }, deleteFile = FALSE)
 
   output$wost_Image <- renderImage({
-    filename <- normalizePath(file.path("./forecasts",
-                              paste0("wost_nb_origin_", input$forecast_origin, ".png")))
+    filename <- normalizePath(file.path(
+      "./forecasts",
+      paste0("wost_nb_origin_", input$forecast_origin, ".png")
+    ))
     # Return a list containing the filename and alt text
-    list(src = filename,
-         alt = paste("Time series for WOST since ",  input$forecast_origin))
+    list(
+      src = filename,
+      alt = paste("Time series for WOST since ",  input$forecast_origin)
+    )
   }, deleteFile = FALSE)
 
   output$whib_Image <- renderImage({
-    filename <- normalizePath(file.path("./forecasts",
-                              paste0("whib_nb_origin_", input$forecast_origin, ".png")))
+    filename <- normalizePath(file.path(
+      "./forecasts",
+      paste0("whib_nb_origin_", input$forecast_origin, ".png")
+    ))
     # Return a list containing the filename and alt text
-    list(src = filename,
-         alt = paste("Time series for WHIB since ",  input$forecast_origin))
+    list(
+      src = filename,
+      alt = paste("Time series for WHIB since ",  input$forecast_origin)
+    )
   }, deleteFile = FALSE)
 
   output$greg_title <- renderText({
     "GREG Counts"
   })
+
   output$wost_title <- renderText({
     "WOST Counts"
   })
+
   output$whib_title <- renderText({
     "WHIB Counts"
   })
+
   output$pred_obs_title <- renderText({
     "Observed vs. Predicted Counts"
   })
