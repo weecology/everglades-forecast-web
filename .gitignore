@@ -2,7 +2,6 @@
 *.Rbuildignore*
 *.RData*
 *.Rproj*
-*Rprofile
 *Rprofile*
 *source_token.txt*
 *.Rhistory*
