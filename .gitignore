@@ -1,9 +1,9 @@
-.Rproj.user
-.Rhistory
-.RData
-.Ruserdata
-.Rbuildignore
 *.DS_Store*
+*.Rbuildignore*
+*.RData*
+*.Rproj*
 *Rprofile
-*.Rproj
-source_token.txt
+*Rprofile*
+*source_token.txt*
+*.Rhistory*
+*.Ruserdata*
