@@ -33,6 +33,7 @@ check_events <- function(x) {
     return(x)
   }
 }
+
 filter_annotations <- function(raw_data) {
   selected_ids <- unique(raw_data$selected_i)
 
@@ -59,8 +60,7 @@ filter_annotations <- function(raw_data) {
          pattern = "03112020",
          replacement = "03_11_2020")
   selected_boxes$event <- as.Date(selected_boxes$event, "%m_%d_%Y")
-  selected_boxes$tileset_id <-
-    construct_id(selected_boxes$site, selected_boxes$event)
+  selected_boxes$tileset_id <- construct_id(selected_boxes$site, selected_boxes$event)
 
   # get unique boxes among observers
   return(selected_boxes)
@@ -70,7 +70,8 @@ plot_annotations <- function(selected_boxes, MAPBOX_ACCESS_TOKEN) {
   pal <- colorFactor(palette = "Dark2",
                      domain = selected_boxes$species)
 
-  selected_centroids <- st_transform(selected_boxes, 4326)
+  selected_centroids <- st_centroid(selected_boxes)
+  selected_centroids <- st_transform(selected_centroids, 4326)
 
   # Create mapbox tileset
   mapbox_tileset <- unique(selected_centroids$tileset_id)
@@ -119,46 +120,47 @@ plot_predictions <- function(df, MAPBOX_ACCESS_TOKEN) {
   return(m)
 }
 
-time_predictions <-
-  function(df,
-           select_site,
-           species = "All",
-           selected_event = NA) {
-    df <- data_frame(df)
-    print(paste("Species is", species))
-    if ("All" %in% species) {
-      g <-
-        df %>%
-        filter(site == select_site) %>%
-        group_by(site, event, year) %>%
-        summarize(n =
-                    n())
-      ggplot(g, aes(x = event, y = n)) +
-        geom_point(aes(color = g$event == selected_event), size = 3.5) +
-        geom_line() +
-        labs(y = "Detected Birds", x = "Date") +
-        theme(text = element_text(size = 20)) +
-        facet_wrap(nrow = 1, ~ year, scales = "free_x") +
-        scale_color_manual(guide = "none", values = c("black", "red"))
-    } else {
-      g <-
-        df %>%
-        filter(site == select_site, label %in% species) %>%
-        group_by(site, event, year, label) %>%
-        summarize(n = n())
-      ggplot(g, aes(x = event, y = n)) +
-        geom_point(aes(
-          color = g$event == selected_event,
-          shape = label
-        ), size = 3) +
-        geom_line(aes(linetype = label)) +
-        theme(text = element_text(size = 20)) +
-        labs(x = "Date", color = "Species", y = "Detected Birds") +
-        facet_wrap(nrow = 1, ~ year, scales = "free_x") +
-        scale_color_manual(guide = "none", values = c("black", "red")) +
-        scale_shape(guide = "none") + scale_linetype(guide = "none")
-    }
+time_predictions <- function(df, select_site, selected_species = "All", selected_event = NA) {
+  df <- data.frame(df)
+  
+  # Check if the selected site is "All"
+  if (select_site == "All") {
+    # Return a blank plot
+    return(
+      ggplot() +
+      geom_blank() +
+      theme_void()
+    )
   }
+  
+  # Grouping by site and event
+  if ("All" %in% selected_species) {
+    g <- df %>%
+      filter(site == select_site) %>%
+      group_by(site, event, year) %>%
+      summarize(n = n(), .groups = "drop")
+  } else {
+    g <- df %>%
+      filter(site == select_site, label %in% selected_species) %>%
+      group_by(site, event, year, label) %>%
+      summarize(n = n(), .groups = "drop")
+  }
+  
+  # Plotting
+  if (nrow(g) > 0) {
+    ggplot(g, aes(x = event, y = n)) +
+      geom_point(aes(color = factor(event == selected_event)), size = 3.5) +
+      geom_line() +
+      labs(y = "Detected Birds", x = "Date") +
+      theme(text = element_text(size = 20)) +
+      facet_wrap(nrow = 1, ~ year, scales = "free_x") +
+      scale_color_manual(guide = "none", values = c("black", "red"))
+  } else {
+    ggplot() +
+      geom_blank() +
+      theme_void()
+  }
+}
 
 species_colors <- colorFactor(
   palette = c("yellow", "blue",

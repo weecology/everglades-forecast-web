@@ -16,10 +16,6 @@ source("prediction_page.R")
 source("functions.R")
 source("load_data.R")
 
-# Define thumbnail dir
-# Source additional pages
-
-# Define UI for application that draws a histogram
 ui <- fluidPage(
   theme = shinytheme("readable"),
   # Navbar to each page
@@ -31,18 +27,15 @@ ui <- fluidPage(
   )
 )
 
-
-
-
-
-
-# Define server logic required
 server <- function(input, output, session) {
   output$zooniverse_anotation <- renderPlot(zooniverse_complete())
 
-  # Setmapbox key
-  readRenviron("source_token.txt")
-  MAPBOX_ACCESS_TOKEN <- Sys.getenv("MAPBOX_ACCESS_TOKEN")
+  # Set mapbox key
+  if (file.exists("source_token.txt"))
+    readRenviron("source_token.txt")
+  MAPBOX_ACCESS_TOKEN = Sys.getenv("MAPBOX_ACCESS_TOKEN")
+  if (is.na(MAPBOX_ACCESS_TOKEN) || MAPBOX_ACCESS_TOKEN == '')
+    paste("Set MAPBOX ACCESS TOKEN,", "Refer to the README.")
 
   # Create pages
   output$about <- about_page()
@@ -56,10 +49,19 @@ server <- function(input, output, session) {
     new_map_data <- map_filter()
     leafletProxy("map", data = new_map_data) %>%
       clearMarkers() %>%
-      addMarkers(
-        popup =
-          ~site
-      )
+      addMarkers(popup = ~ site)
+  })
+
+  site_name_filter <- reactive({
+    return(as.character(input$prediction_site))
+  })
+
+  species_name_filter <- reactive({
+    if ("All" %in% input$prediction_species) {
+      return("All")
+    } else {
+      return(input$prediction_species)
+    }
   })
 
   map_filter <- reactive({
@@ -67,12 +69,11 @@ server <- function(input, output, session) {
     if (is.null(input$prediction_site)) {
       return(colonies)
     }
-
     map_data <- colonies %>% filter(site == input$prediction_site)
     return(map_data)
   })
 
-  ## Prediction panel##
+  ## Prediction panel ##
   prediction_filter <- reactive({
     if (is.null(input$mapbox_date)) {
       mapbox_date <- "2020-02-24"
@@ -99,84 +100,76 @@ server <- function(input, output, session) {
     return(to_plot)
   })
 
-  site_name_filter <- reactive({
-    return(input$prediction_site)
-  })
-
-  species_name_filter <- reactive({
-    if ("All" %in% input$prediction_species) {
-      return("All")
-    } else {
-      return(input$prediction_species)
-    }
-  })
-
-  output$date_slider <- renderUI({
-    print(paste("selected_size is:", site_name_filter()))
-    selected_df <- df %>%
-      filter(site == site_name_filter())
+output$date_slider <- renderUI({
+    selected_site <- site_name_filter()
+    selected_df <- df %>% filter(site == selected_site)
     available_dates <- sort(unique(selected_df$event))
-    sliderTextInput(inputId = "mapbox_date", "Select Date", choices = available_dates)
-  })
+
+    # Check if the selected date is in the available dates
+    selected_date <- input$mapbox_date
+    if (!is.null(selected_date) && !(selected_date %in% available_dates)) {
+      # If the selected date is not in the available dates,
+      # set it to the first available date
+      selected_date <- available_dates[1]
+    }
+
+    # Check if the selected site is "All", don't render the slider
+    if (selected_site == "All") {
+      return(NULL)
+    } else {
+      # Otherwise, render the slider
+      sliderTextInput(
+        inputId = "mapbox_date",
+        label = "Select Date",
+        choices = available_dates,
+        selected = selected_date
+      )
+    }
+})
 
   output$predicted_time_plot <-
     renderPlot(
       time_predictions(
         df,
         site_name_filter(),
-        species = species_name_filter(),
+        selected_species = species_name_filter(),
         selected_event = input$mapbox_date
       )
     )
   output$sample_prediction_map <-
     renderLeaflet(plot_predictions(df = prediction_filter(), MAPBOX_ACCESS_TOKEN))
 
-
-
-
-
   output$pred_obs_Image <- renderImage({
     filename <- normalizePath(file.path("./forecasts",
                               paste0("nb_origin_", input$forecast_origin, ".png")))
-
     # Return a list containing the filename and alt text
     list(src = filename,
          alt = paste("Observed as a function of predicted for ", input$origin))
-
   }, deleteFile = FALSE)
-
 
 
   output$greg_Image <- renderImage({
     filename <- normalizePath(file.path("./forecasts",
                               paste0("greg_nb_origin_", input$forecast_origin, ".png")))
-
     # Return a list containing the filename and alt text
     list(src = filename,
          alt = paste("Time series for GREG since ",  input$forecast_origin))
-
   }, deleteFile = FALSE)
-
 
   output$wost_Image <- renderImage({
     filename <- normalizePath(file.path("./forecasts",
                               paste0("wost_nb_origin_", input$forecast_origin, ".png")))
-
     # Return a list containing the filename and alt text
     list(src = filename,
          alt = paste("Time series for WOST since ",  input$forecast_origin))
-
   }, deleteFile = FALSE)
-
 
   output$whib_Image <- renderImage({
     filename <- normalizePath(file.path("./forecasts",
                               paste0("whib_nb_origin_", input$forecast_origin, ".png")))
-
     # Return a list containing the filename and alt text
     list(src = filename,
          alt = paste("Time series for WHIB since ",  input$forecast_origin))
-
   }, deleteFile = FALSE)
 
   output$greg_title <- renderText({
@@ -191,8 +184,6 @@ server <- function(input, output, session) {
   output$pred_obs_title <- renderText({
     "Observed vs. Predicted Counts"
   })
-
-
 }
 
 # Run the application
