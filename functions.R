@@ -76,15 +76,23 @@ plot_annotations <- function(selected_boxes, MAPBOX_ACCESS_TOKEN) {
   # Create mapbox tileset
   mapbox_tileset <- unique(selected_centroids$tileset_id)
   mapbox_tileset <- paste("bweinstein.", mapbox_tileset, sep = "")
+
+  # Use addTiles and URL template for Mapbox Classic tiles
+  mapbox_url_template <-
+    paste0(
+      "https://api.tiles.mapbox.com/v4/",
+      mapbox_tileset,
+      "/{z}/{x}/{y}.png?access_token=",
+      MAPBOX_ACCESS_TOKEN
+    )
+
   m <- leaflet(data = selected_centroids) %>%
-    addProviderTiles(
-      "MapBox",
-      options = providerTileOptions(
-        id = mapbox_tileset,
+    addTiles(
+      urlTemplate = mapbox_url_template,
+      options = tileOptions(
         minZoom = 18,
         maxNativeZoom = 24,
-        maxZoom = 24,
-        accessToken = MAPBOX_ACCESS_TOKEN
+        maxZoom = 24
       )
     ) %>%
     addCircles(
@@ -100,15 +108,22 @@ plot_predictions <- function(df, MAPBOX_ACCESS_TOKEN) {
   mapbox_tileset <- unique(df$tileset_id)
   mapbox_tileset <- paste("bweinstein.", mapbox_tileset, sep = "")
 
+  # Use addTiles and URL template for Mapbox Classic tiles
+  mapbox_url_template <-
+    paste0(
+      "https://api.tiles.mapbox.com/v4/",
+      mapbox_tileset,
+      "/{z}/{x}/{y}.png?access_token=",
+      MAPBOX_ACCESS_TOKEN
+    )
+
   m <- leaflet(data = df) %>%
-    addProviderTiles(
-      "MapBox",
-      options = providerTileOptions(
-        id = mapbox_tileset,
+    addTiles(
+      urlTemplate = mapbox_url_template,
+      options = tileOptions(
         minZoom = 18,
         maxNativeZoom = 24,
-        maxZoom = 24,
-        accessToken = MAPBOX_ACCESS_TOKEN
+        maxZoom = 24
       )
     ) %>%
     addPolygons(
@@ -147,7 +162,7 @@ time_predictions <- function(df, select_site, selected_species = "All", selected
   # Plotting
   if (nrow(g) > 0) {
     ggplot(g, aes(x = event, y = n)) +
-      geom_point(aes(color = factor(event == selected_event)), size = 3.5) +
+      geom_point(aes(color = factor(event == selected_event)), size = 1.5) +
       geom_line() +
       labs(y = "Detected Birds", x = "Date") +
       theme(text = element_text(size = 20)) +
