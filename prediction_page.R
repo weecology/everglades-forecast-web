@@ -11,7 +11,7 @@ predicted_page <- function(df) {
         ),
         selectInput(
           "prediction_site",
-          "Site",
+          "site",
           choices = c("All", sort(unique(df$site))),
           selected = "Joule"
         ),
