@@ -105,19 +105,19 @@ server <- function(input, output, session) {
     selected_df <- df %>% filter(site == selected_site)
     available_dates <- sort(unique(selected_df$event))
 
-    # Check if the selected date is in the available dates
-    selected_date <- input$mapbox_date
-    if (!is.null(selected_date) && !(selected_date %in% available_dates)) {
-      # If the selected date is not in the available dates,
-      # set it to the first available date
-      selected_date <- available_dates[1]
-    }
-
     # Check if the selected site is "All", don't render the slider
     if (selected_site == "All") {
       return(NULL)
     } else {
-      # Otherwise, render the slider
+      # Check if the selected date is in the available dates
+      selected_date <- input$mapbox_date
+      if (is.null(selected_date) || !(selected_date %in% available_dates)) {
+        # If the selected date is null or not in the available dates,
+        # set it to the first available date
+        selected_date <- available_dates[1]
+      }
+
+      # Render the slider
       sliderTextInput(
         inputId = "mapbox_date",
         label = "Select Date",
@@ -126,6 +126,7 @@ server <- function(input, output, session) {
       )
     }
   })
+
 
   output$predicted_time_plot <-
     renderPlot(
