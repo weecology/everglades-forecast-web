@@ -111,11 +111,6 @@ server <- function(input, output, session) {
     } else {
       # Check if the selected date is in the available dates
       selected_date <- input$mapbox_date
-      if (is.null(selected_date) || !(selected_date %in% available_dates)) {
-        # If the selected date is null or not in the available dates,
-        # set it to the first available date
-        selected_date <- available_dates[1]
-      }
 
       # Render the slider
       sliderTextInput(
