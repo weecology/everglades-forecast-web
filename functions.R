@@ -7,6 +7,7 @@ library(gridExtra)
 library(stringr)
 library(htmltools)
 library(tidyr)
+library(RColorBrewer)
 
 # Site map
 create_map <- function(colonies) {
@@ -105,6 +106,12 @@ plot_annotations <- function(selected_boxes, MAPBOX_ACCESS_TOKEN) {
 }
 
 plot_predictions <- function(df, MAPBOX_ACCESS_TOKEN) {
+  # Get unique species from the data
+  available_species <- sort(unique(df$label))
+  
+  # Create dynamic color palette using our robust function
+  species_colors <- species_colors(df)
+  
   mapbox_tileset <- unique(df$tileset_id)
   mapbox_tileset <- paste("bweinstein.", mapbox_tileset, sep = "")
 
@@ -135,39 +142,66 @@ plot_predictions <- function(df, MAPBOX_ACCESS_TOKEN) {
   return(m)
 }
 
-time_predictions <- function(df, select_site, selected_species = "All", selected_event = NA) {
+time_predictions <- function(df, selected_site, selected_species = "All", selected_event = NULL) {
   df <- data.frame(df)
 
   # Check if the selected site is "All"
-  if (select_site == "All") {
+  if (selected_site == "All") {
     # Return a blank plot
     return(ggplot() +
              geom_blank() +
              theme_void())
   }
 
-  # Grouping by site and event
+  # Get unique species from the data
+  available_species <- sort(unique(df$label))
+
+  # Grouping by site, event, and label (species)
   if ("All" %in% selected_species) {
     g <- df %>%
-      filter(site == select_site) %>%
-      group_by(site, event, year) %>%
+      filter(site == selected_site) %>%
+      group_by(site, event, year, label) %>%
       summarize(n = n(), .groups = "drop")
   } else {
     g <- df %>%
-      filter(site == select_site, label %in% selected_species) %>%
+      filter(site == selected_site, label %in% selected_species) %>%
       group_by(site, event, year, label) %>%
       summarize(n = n(), .groups = "drop")
   }
 
-  # Plotting
+  # Create a dynamic color palette based on number of species
+  n_species <- length(available_species)
+  species_colors <- colorFactor(
+    palette = colorRampPalette(brewer.pal(8, "Set2"))(n_species),
+    domain = available_species,
+    ordered = TRUE
+  )
+
+  # Plotting with different colors for each species
   if (nrow(g) > 0) {
-    ggplot(g, aes(x = event, y = n)) +
-      geom_point(aes(color = factor(event == selected_event)), size = 1.5) +
+    ggplot(g, aes(x = event, y = n, color = label, group = label)) +
       geom_line() +
-      labs(y = "Detected Birds", x = "Date") +
-      theme(text = element_text(size = 20)) +
+      geom_point(size = 2) +
+      # Add highlighted point if a date is selected
+      {if (!is.null(selected_event)) 
+        geom_point(data = subset(g, event == selected_event),
+                  size = 8,
+                  color = "#00CC00",
+                  alpha = 0.7)} +
+      labs(y = "Detected Birds", 
+           x = "Date",
+           color = "Species") +
+      theme_minimal() +
+      theme(
+        text = element_text(size = 12),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "right",
+        legend.title = element_text(size = 12, face = "bold"),
+        legend.text = element_text(size = 10),
+        plot.title = element_text(hjust = 0.5, size = 14)
+      ) +
       facet_wrap(nrow = 1, ~ year, scales = "free_x") +
-      scale_color_manual(guide = "none", values = c("black", "red"))
+      scale_color_manual(values = species_colors(available_species))  # Use dynamic colors
   } else {
     ggplot() +
       geom_blank() +
@@ -175,20 +209,27 @@ time_predictions <- function(df, select_site, selected_species = "All", selected
   }
 }
 
-species_colors <- colorFactor(
-  palette = c("yellow", "blue",
-              "#ff007f", "brown",
-              "purple", "white"),
-  domain = c(
-    "Great Egret",
-    "Great Blue Heron",
-    "Roseate Spoonbill",
-    "Wood Stork",
-    "Snowy Egret",
-    "White Ibis"
-  ),
-  ordered = TRUE
-)
+# Update the species_colors function to be more robust
+species_colors <- function(df) {
+  available_species <- sort(unique(df$label))
+  n_species <- length(available_species)
+  
+# Define a set of distinct colors (adjusted to remove tree, grass, and soil-like colors)
+base_colors <- c("#E41A1C", "#377EB8", "#984EA3", "#FF7F00",  
+                 "#FFFF33", "#F781BF", "#8B4513", "#00CED1")
+  # If we need more colors, use colorRampPalette
+  if (n_species > length(base_colors)) {
+    colors <- colorRampPalette(base_colors)(n_species)
+  } else {
+    colors <- base_colors[1:n_species]
+  }
+  
+  colorFactor(
+    palette = colors,
+    domain = available_species,
+    ordered = TRUE
+  )
+}
 
 # Construct mapbox url
 construct_id <- function(site, event) {

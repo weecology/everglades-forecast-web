@@ -1,27 +1,28 @@
 predicted_page <- function(df) {
   renderUI({
-    sidebarLayout(
-      sidebarPanel(
+    # Get available species from the data
+    available_species <- sort(unique(df$label))
+
+    fluidRow(
+      column(4,
+        selectInput(
+          "prediction_site",
+          "Select Site",
+          choices = c("All", unique(colonies$site))
+        ),
         selectInput(
           "prediction_species",
-          "Species",
-          choices = c("All", sort(unique(df$label))),
+          "Select Species",
+          choices = c("All", available_species),  # Use dynamic species list
           multiple = TRUE,
           selected = "All"
         ),
-        selectInput(
-          "prediction_site",
-          "site",
-          choices = c("All", sort(unique(df$site))),
-          selected = "Joule"
-        ),
-        leafletOutput("map", height = 300),
         uiOutput("date_slider"),
-        width = 3
+        leafletOutput("map", height = "400px")
       ),
-      mainPanel(
-        plotOutput("predicted_time_plot"),
-        leafletOutput("sample_prediction_map")
+      column(8,
+        plotOutput("predicted_time_plot", height = "400px"),
+        leafletOutput("sample_prediction_map", height = "400px")
       )
     )
   })
