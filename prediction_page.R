@@ -13,7 +13,7 @@ predicted_page <- function(df) {
         selectInput(
           "prediction_species",
           "Select Species",
-          choices = c("All", available_species),  # Use dynamic species list
+          choices = c("All", available_species), # Use dynamic species list
           multiple = TRUE,
           selected = "All"
         ),
