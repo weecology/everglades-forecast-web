@@ -76,42 +76,42 @@ get_new_samp_locs <-
         long
       )
 
-    return(field_nests)
+    field_nest_surveys <- unique(field_nests[c("site", "year")])
+    samp_locs_updated <- sample_locations
+    changes_made <- FALSE
+    for (i in seq_len(nrow(field_nest_surveys))) {
+      focal_site <- field_nest_surveys[i, ]["site"][[1]]
+      focal_year <- field_nest_surveys[i, ]["year"][[1]]
+      focal_field_nests <-
+        filter(field_nests, site == focal_site, year == focal_year)
+      focal_sample_locations <-
+        filter(sample_locations, site == focal_site, year == focal_year)
+      focal_birds <-
+        filter(birds, site == focal_site, year == focal_year)
+      field_nest_count <- nrow(focal_field_nests)
+      samp_count_yes <-
+        nrow(filter(focal_sample_locations, real_nest == "yes"))
+      samp_count_no <-
+        nrow(filter(focal_sample_locations, real_nest == "no"))
+      if (samp_count_yes == 0 & samp_count_no == 0) {
+        new_samp_locs <-
+          get_new_samp_locs(focal_birds, focal_field_nests, site, year)
+        samp_locs_updated <- rbind(samp_locs_updated, new_samp_locs)
+        changes_made <- TRUE
+      } else if (samp_count_yes != field_nest_count | samp_count_no != field_nest_count) {
+        stop("Field nest counts and sample counts don't match and sample counts are not zero. Help!")
+      }
+    }
+
+    if (changes_made) {
+      message("Updating sampling file with for new field nests")
+      write.csv(samp_locs_updated,
+        "experiments/field_nest_sample_locations.csv",
+        row.names = FALSE
+      )
+    } else {
+      message("No updates required")
+    }
   }
 
-field_nest_surveys <- unique(field_nests[c("site", "year")])
-samp_locs_updated <- sample_locations
-changes_made <- FALSE
-for (i in seq_len(nrow(field_nest_surveys))) {
-  focal_site <- field_nest_surveys[i, ]["site"][[1]]
-  focal_year <- field_nest_surveys[i, ]["year"][[1]]
-  focal_field_nests <-
-    filter(field_nests, site == focal_site, year == focal_year)
-  focal_sample_locations <-
-    filter(sample_locations, site == focal_site, year == focal_year)
-  focal_birds <-
-    filter(birds, site == focal_site, year == focal_year)
-  field_nest_count <- nrow(focal_field_nests)
-  samp_count_yes <-
-    nrow(filter(focal_sample_locations, real_nest == "yes"))
-  samp_count_no <-
-    nrow(filter(focal_sample_locations, real_nest == "no"))
-  if (samp_count_yes == 0 & samp_count_no == 0) {
-    new_samp_locs <-
-      get_new_samp_locs(focal_birds, focal_field_nests, site, year)
-    samp_locs_updated <- rbind(samp_locs_updated, new_samp_locs)
-    changes_made <- TRUE
-  } else if (samp_count_yes != field_nest_count | samp_count_no != field_nest_count) {
-    stop("Field nest counts and sample counts don't match and sample counts are not zero. Help!")
-  }
-}
-
-if (changes_made) {
-  message("Updating sampling file with for new field nests")
-  write.csv(samp_locs_updated,
-    "experiments/field_nest_sample_locations.csv",
-    row.names = FALSE
-  )
-} else {
-  message("No updates required")
-}
+get_new_samp_locs(birds, field_nests, "site", "year")
