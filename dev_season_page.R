@@ -37,7 +37,8 @@ dev_season_page <- function(df,
             selectInput(
               "dev_prediction_site",
               "Select Site",
-              choices = c("All", unique(colonies$site))
+              choices = c("All", unique(colonies$site)),
+              selected = "Joule"
             ),
             selectInput(
               "dev_prediction_species",

@@ -302,7 +302,8 @@ server <- function(input, output, session) {
             selectInput(
               "current_season_site",
               "Select Site",
-              choices = c("All", unique(colonies_data()$site))
+              choices = c("All", unique(colonies_data()$site)),
+              selected = "Joule"
             ),
             selectInput(
               "current_season_species",
