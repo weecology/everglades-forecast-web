@@ -15,23 +15,23 @@ create_map <- function(colonies) {
     leaflet(data = colonies) %>%
     addTiles() %>%
     addMarkers(popup = ~ site)
-  return(renderLeaflet(m))
+  renderLeaflet(m)
 }
 
 # Load data
 load_classifications <- function() {
   raw_data <- read_sf("data/everglades-watch-classifications.shp")
   st_crs(raw_data) <- 32617
-  return(raw_data)
+  raw_data
 }
 
 # Filter classification by spatial overlap
 
 check_events <- function(x) {
   if (str_detect(x, "_")) {
-    return(str_match(x, "(\\w+)_")[, 2])
+    str_match(x, "(\\w+)_")[, 2]
   } else {
-    return(x)
+    x
   }
 }
 
@@ -63,7 +63,7 @@ filter_annotations <- function(raw_data) {
   selected_boxes$tileset_id <- construct_id(selected_boxes$site, selected_boxes$event)
 
   # get unique boxes among observers
-  return(selected_boxes)
+  selected_boxes
 }
 
 plot_annotations <- function(selected_boxes, MAPBOX_ACCESS_TOKEN) {
@@ -96,7 +96,7 @@ plot_annotations <- function(selected_boxes, MAPBOX_ACCESS_TOKEN) {
       fillOpacity = 0.1,
       popup = ~ htmlEscape(label)
     )
-  return(m)
+  m
 }
 
 plot_predictions <- function(df, MAPBOX_ACCESS_TOKEN) {
@@ -129,7 +129,7 @@ plot_predictions <- function(df, MAPBOX_ACCESS_TOKEN) {
       popup = ~ htmlEscape(paste(label, round(score, 2), sep = ":")),
       color = ~ species_colors(label)
     )
-  return(m)
+  m
 }
 
 time_predictions <- function(df,
@@ -233,5 +233,5 @@ species_colors <- function(df) {
 construct_id <- function(site, event) {
   event_formatted <- format(event, "%m_%d_%Y")
   tileset_id <- paste(site, "_", event_formatted, sep = "")
-  return(tileset_id)
+  tileset_id
 }
