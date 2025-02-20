@@ -1,8 +1,30 @@
-*.DS_Store*
-*.Rbuildignore*
-*.RData*
-*.Rproj*
-*Rprofile*
-*source_token.txt*
-*.Rhistory*
-*.Ruserdata*
+# R specific files
+*.RData
+*.Rhistory
+*.Rproj.user
+*.Rbuildignore
+*.Rproj
+*.Rprofile
+*.Ruserdata
+eRprofile
+
+# Environment and credentials
+.Renviron
+.Renviron.site
+.credentials.yml
+source_token.txt
+
+# System files
+.DS_Store
+.env
+
+# Generated data files
+
+data/parsed_annotations.csv
+data/parsed_nest_annotations.csv
+data/*_unprojected.*
+data/*.dbf
+data/*.shx
+data/*.prj
+data/*.cpg
+.Rproj.user
