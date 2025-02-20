@@ -197,7 +197,7 @@ server <- function(input, output, session) {
   })
 
   # Load credentials from YAML file
-  credentials <- yaml::read_yaml(".credentials.yml")$credentials
+  credentials <- yaml::read_yaml("~/.credentials.yml")$credentials
 
   # Authentication state
   is_authenticated <- reactiveVal(FALSE)
