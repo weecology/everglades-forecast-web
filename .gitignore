@@ -27,3 +27,4 @@ data/*.dbf
 data/*.shx
 data/*.prj
 data/*.cpg
+.Rproj.user

@@ -1,6 +1,8 @@
 # Install required packages if not already installed
-if (!require("leaflet.extras")) install.packages("leaflet.extras")
-if (!require("leaflet.extras2")) install.packages("leaflet.extras2")
+if (!require("leaflet.extras"))
+  install.packages("leaflet.extras")
+if (!require("leaflet.extras2"))
+  install.packages("leaflet.extras2")
 if (!require("leaflet.mapboxgl")) {
   remotes::install_github("rstudio/leaflet.mapboxgl")
 }
@@ -13,12 +15,12 @@ suppressPackageStartupMessages({
   library(sf)
   library(stringr)
   library(shinythemes)
-  library(shinyjs)  # For JavaScript operations
-  library(lubridate)  # Add this for year() function
-  library(memoise)  # Added for caching
-  library(leaflet.extras)  # Add this line
-  library(leaflet.extras2)  # Add this line for fullscreen control
-  library(leaflet.mapboxgl)  # Add this line
+  library(shinyjs) # For JavaScript operations
+  library(lubridate) # Add this for year() function
+  library(memoise) # Added for caching
+  library(leaflet.extras)
+  library(leaflet.extras2)
+  library(leaflet.mapboxgl)
 })
 
 # Source page UIs
@@ -30,15 +32,17 @@ source("load_data.R")
 source("dev_season_page.R")
 
 # Add near the top of the file
-options(shiny.maxRequestSize = 30*1024^2)  # Increase max request size to 30MB
+options(shiny.maxRequestSize = 30 * 1024 ^ 2) # Increase max request size to 30MB
 options(shiny.reactlog = FALSE)  # Disable reactive log in production
 options(shiny.autoreload = FALSE)  # Disable auto-reload in production
 
 ui <- fluidPage(
-  useShinyjs(),  # Initialize shinyjs
+  useShinyjs(),
+  # Initialize shinyjs
   theme = shinytheme("readable"),
-  tags$head(
-    tags$style(HTML("
+  tags$head(tags$style(
+    HTML(
+      "
       #loading-content {
         position: absolute;
         background: #000000;
@@ -50,9 +54,12 @@ ui <- fluidPage(
         text-align: center;
         color: #FFFFFF;
       }
-    ")),
-    # Add the JavaScript function for clearTimeout
-    tags$script(HTML("
+    "
+    )
+  ), # Add the JavaScript function for clearTimeout
+  tags$script(
+    HTML(
+      "
       var timers = {};
       Shiny.addCustomMessageHandler('clearTimer', function(id) {
         if (timers[id]) {
@@ -65,8 +72,9 @@ ui <- fluidPage(
           Shiny.setInputValue('timer_triggered_' + data.id, true, {priority: 'event'});
         }, data.delay);
       });
-    "))
-  ),
+    "
+    )
+  )),
   div(id = "loading-content", "Loading..."),
   # Navbar to each page
   navbarPage(
@@ -91,14 +99,14 @@ server <- function(input, output, session) {
 
   # Cache for precomputed data
   cached_data <- reactiveVal(NULL)
-  
+
   # Initialize cache on startup
   observe({
     # This will run once when the app starts
     year_to_filter <- as.numeric(current_year())
-    
+
     # Precompute yearly data with better NA handling and optimization
-    yearly_data <- df %>% 
+    yearly_data <- df %>%
       filter(lubridate::year(as.Date(event)) == year_to_filter) %>%
       # Handle NAs and add computed columns
       mutate(
@@ -110,31 +118,26 @@ server <- function(input, output, session) {
         label = factor(label),
         # Add required columns for plot_predictions
         score = 1.0,
-        tileset_id = paste(site, event, sep="_")
+        tileset_id = paste(site, event, sep = "_")
       ) %>%
       # Remove rows with NA in critical columns
       filter(!is.na(site), !is.na(label), !is.na(event))
-    
+
     # Get all unique combinations
     all_sites <- c("All", unique(yearly_data$site))
     all_species <- c("All", unique(yearly_data$label))
     all_dates <- unique(yearly_data$date)
-    
+
     # Pre-calculate site-species combinations
-    site_species_combinations <- expand.grid(
-      site = all_sites,
-      species = all_species,
-      stringsAsFactors = FALSE
-    )
-    
+    site_species_combinations <- expand.grid(site = all_sites,
+                                             species = all_species,
+                                             stringsAsFactors = FALSE)
+
     # Pre-calculate aggregated data for all combinations
     aggregated_data <- yearly_data %>%
       # First, calculate counts for each site-species-date combination
       group_by(site, label, date) %>%
-      summarise(
-        count = n(),
-        .groups = 'drop'
-      ) %>%
+      summarise(count = n(), .groups = "drop") %>%
       # Complete the dataset with all combinations
       complete(
         site = unique(yearly_data$site),
@@ -142,30 +145,24 @@ server <- function(input, output, session) {
         date = all_dates,
         fill = list(count = 0)
       )
-    
+
     # Pre-calculate "All" site summaries
     all_sites_data <- aggregated_data %>%
       group_by(label, date) %>%
-      summarise(
-        count = sum(count),
-        .groups = 'drop'
-      )
-    
+      summarise(count = sum(count), .groups = "drop")
+
     # Pre-calculate "All" species summaries
     all_species_data <- aggregated_data %>%
       group_by(site, date) %>%
-      summarise(
-        count = sum(count),
-        .groups = 'drop'
-      )
-    
+      summarise(count = sum(count), .groups = "drop")
+
     # Pre-calculate map data with optimization
     map_data <- yearly_data %>%
       select(site, label, event, geometry, score, tileset_id) %>%
       st_transform(4326) %>%
       st_simplify(dTolerance = 0.0001) %>%
       filter(st_is_valid(.))
-    
+
     # Store everything in cache
     cache_list <- list(
       yearly_data = yearly_data,
@@ -178,7 +175,7 @@ server <- function(input, output, session) {
       available_sites = all_sites,
       available_species = all_species
     )
-    
+
     cached_data(cache_list)
   })
 
@@ -186,7 +183,7 @@ server <- function(input, output, session) {
   current_year <- reactive({
     # Check if we're in production environment
     in_production <- Sys.getenv("INPRODUCTION", "FALSE")
-    
+
     if (tolower(in_production) == "true") {
       # In production: use actual current year
       format(Sys.Date(), "%Y")
@@ -207,20 +204,20 @@ server <- function(input, output, session) {
   colonies_data <- reactive({
     # Get the raw colonies data
     data <- colonies  # directly use the colonies data frame
-    
+
     # Ensure coordinates are numeric and in the correct format
     if (inherits(data, "sf")) {
       coords <- st_coordinates(data)
-      data$longitude <- coords[,1]
-      data$latitude <- coords[,2]
+      data$longitude <- coords[, 1]
+      data$latitude <- coords[, 2]
     }
     data
   })
-  
+
   # Add a reactive for yearly data to avoid recomputing
   current_year_data <- reactive({
     year_to_filter <- as.numeric(current_year())
-    df %>% 
+    df %>%
       filter(lubridate::year(as.Date(event)) == year_to_filter)
   })
 
@@ -228,10 +225,10 @@ server <- function(input, output, session) {
   filtered_site_data <- reactive({
     req(is_authenticated())
     req(cached_data())
-    
+
     selected_site <- current_season_site_filter()
     selected_species <- current_season_species_filter()
-    
+
     # Get the appropriate pre-calculated data
     if (selected_site == "All" && "All" %in% selected_species) {
       # Both "All" selected - use yearly totals by species
@@ -241,7 +238,7 @@ server <- function(input, output, session) {
       data <- cached_data()$aggregated_data %>%
         filter(label %in% selected_species) %>%
         group_by(label, date) %>%
-        summarise(count = sum(count), .groups = 'drop')
+        summarise(count = sum(count), .groups = "drop")
     } else if ("All" %in% selected_species) {
       # Specific site, all species
       data <- cached_data()$all_species_data %>%
@@ -249,22 +246,21 @@ server <- function(input, output, session) {
     } else {
       # Specific site and species
       data <- cached_data()$aggregated_data %>%
-        filter(
-          site == selected_site,
-          label %in% selected_species
-        )
+        filter(site == selected_site, label %in% selected_species)
     }
-    
+
     # Ensure we have data
     if (nrow(data) == 0) {
-      return(data.frame(
-        date = as.Date(character()),
-        count = numeric(),
-        label = character(),
-        stringsAsFactors = FALSE
-      ))
+      return(
+        data.frame(
+          date = as.Date(character()),
+          count = numeric(),
+          label = character(),
+          stringsAsFactors = FALSE
+        )
+      )
     }
-    
+
     data
   })
 
@@ -274,13 +270,13 @@ server <- function(input, output, session) {
   # Update current_view when switching between plot and map
   observe({
     # Set to "plot" when plot is visible
-    if (!is.null(input$current_season_plot_visible) && 
-        input$current_season_plot_visible) {
+    if (!is.null(input$current_season_plot_visible) &&
+          input$current_season_plot_visible) {
       current_view("plot")
     }
     # Set to "map" when map is visible
-    if (!is.null(input$current_season_prediction_map_visible) && 
-        input$current_season_prediction_map_visible) {
+    if (!is.null(input$current_season_prediction_map_visible) &&
+          input$current_season_prediction_map_visible) {
       current_view("map")
     }
   })
@@ -291,52 +287,54 @@ server <- function(input, output, session) {
     if (!is_authenticated()) {
       uiOutput("login_ui")
     } else {
-      fluidRow(
-        column(12,
-          div(
-            style = "float: right;",
-            actionButton("logout", "Logout", class = "btn-danger")
-          ),
-          h3(paste("Current Season Analysis (", current_year(), ")")),
-          fluidRow(
-            column(4,
-              selectInput(
-                "current_season_site",
-                "Select Site",
-                choices = c("All", unique(colonies_data()$site))
-              ),
-              selectInput(
-                "current_season_species",
-                "Select Species",
-                choices = c("All", "Great Egret", "Wood Stork", "White Ibis"),
-                multiple = TRUE,
-                selected = "All"
-              ),
-              uiOutput("current_season_date_slider"),
-              leafletOutput("current_season_map", height = "400px")
+      fluidRow(column(
+        12,
+        div(
+          style = "float: right;",
+          actionButton("logout", "Logout", class = "btn-danger")
+        ),
+        h3(paste(
+          "Current Season Analysis (", current_year(), ")"
+        )),
+        fluidRow(
+          column(
+            4,
+            selectInput(
+              "current_season_site",
+              "Select Site",
+              choices = c("All", unique(colonies_data()$site))
             ),
-            column(8,
-              tabsetPanel(
-                tabPanel("Time Series", 
-                  plotOutput("current_season_plot", height = "400px")
-                ),
-                tabPanel("Bird Detections", 
-                  leafletOutput("current_season_prediction_map", height = "800px")
-                )
-              )
+            selectInput(
+              "current_season_species",
+              "Select Species",
+              choices = c("All", "Great Egret", "Wood Stork", "White Ibis"),
+              multiple = TRUE,
+              selected = "All"
+            ),
+            uiOutput("current_season_date_slider"),
+            leafletOutput("current_season_map", height = "400px")
+          ),
+          column(8, tabsetPanel(
+            tabPanel(
+              "Time Series",
+              plotOutput("current_season_plot", height = "400px")
+            ),
+            tabPanel(
+              "Bird Detections",
+              leafletOutput("current_season_prediction_map", height = "800px")
             )
-          )
+          ))
         )
-      )
+      ))
     }
   })
-  
+
   # Handle logout
   observeEvent(input$logout, {
     is_authenticated(FALSE)
     current_user(NULL)
   })
-  
+
   # Update the reactive filters to match Species Detection tab
   current_season_site_filter <- reactive({
     return(as.character(input$current_season_site))
@@ -354,26 +352,27 @@ server <- function(input, output, session) {
   output$current_season_date_slider <- renderUI({
     req(is_authenticated())
     req(cached_data())
-    
+
     selected_site <- current_season_site_filter()
-    
+
     if (selected_site == "All") {
       return(NULL)
     }
-    
+
     # Use cached dates for the selected site
     available_dates <- cached_data()$yearly_data %>%
       filter(site == selected_site) %>%
       pull(date) %>%
       unique() %>%
       sort()
-    
+
     if (length(available_dates) > 0) {
       selected_date <- input$current_season_date
-      if (!is.null(selected_date) && !(selected_date %in% available_dates)) {
+      if (!is.null(selected_date) &&
+            !(selected_date %in% available_dates)) {
         selected_date <- available_dates[1]
       }
-      
+
       sliderTextInput(
         inputId = "current_season_date",
         label = "Select Date",
@@ -387,7 +386,7 @@ server <- function(input, output, session) {
   output$current_season_map <- renderLeaflet({
     req(is_authenticated())
     data <- isolate(colonies_data())
-    
+
     leaflet(data) %>%
       addTiles() %>%
       addMarkers(
@@ -408,14 +407,14 @@ server <- function(input, output, session) {
   output$current_season_plot <- renderPlot({
     req(is_authenticated())
     req(cached_data())
-    
+
     # Get current selections
     selected_site <- current_season_site_filter()
     selected_species <- current_season_species_filter()
-    
+
     # Use pre-aggregated data
     plot_data <- cached_data()$aggregated_data
-    
+
     # Apply filters
     if (selected_site != "All") {
       plot_data <- plot_data %>% filter(site == selected_site)
@@ -423,43 +422,49 @@ server <- function(input, output, session) {
     if (!"All" %in% selected_species) {
       plot_data <- plot_data %>% filter(label %in% selected_species)
     }
-    
+
     if (nrow(plot_data) == 0) {
-      return(ggplot() +
-        annotate("text", x = 0.5, y = 0.5, 
-                label = "No data available for current selection",
-                size = 6) +
-        theme_void() +
-        xlim(0, 1) + ylim(0, 1))
+      return(
+        ggplot() +
+          annotate(
+            "text",
+            x = 0.5,
+            y = 0.5,
+            label = "No data available for current selection",
+            size = 6
+          ) +
+          theme_void() +
+          xlim(0, 1) + ylim(0, 1)
+      )
     }
-    
+
     # Create the plot using pre-aggregated data
     tryCatch({
       if (selected_site == "All") {
         # For all sites, sum across sites
         plot_data <- plot_data %>%
           group_by(date, label) %>%
-          summarise(count = sum(count), .groups = 'drop')
+          summarise(count = sum(count), .groups = "drop")
       }
-      
-      ggplot(plot_data, aes(x = date, y = count, color = label, group = label)) +
+
+      ggplot(plot_data,
+             aes(
+               x = date,
+               y = count,
+               color = label,
+               group = label
+             )) +
         geom_line(linewidth = 1) +
         geom_point(size = 3) +
-        scale_x_date(
-          date_breaks = "1 month",
-          date_labels = "%b %Y"
-        ) +
-        scale_y_continuous(
-          labels = scales::comma,
-          limits = c(0, NA)
-        ) +
+        scale_x_date(date_breaks = "1 month", date_labels = "%b %Y") +
+        scale_y_continuous(labels = scales::comma, limits = c(0, NA)) +
         labs(
           x = "Date",
           y = "Number of Birds",
           color = "Species",
-          title = if(selected_site == "All") 
-            "Bird Counts Across All Sites" 
-          else 
+          title = if (selected_site == "All")
+            "Bird Counts Across All Sites"
+          else
             paste("Bird Counts at", selected_site)
         ) +
         theme_minimal() +
@@ -474,9 +479,13 @@ server <- function(input, output, session) {
     }, error = function(e) {
       print(paste("Error in plot:", e$message))
       ggplot() +
-        annotate("text", x = 0.5, y = 0.5, 
-                label = "Error creating plot",
-                size = 6) +
+        annotate(
+          "text",
+          x = 0.5,
+          y = 0.5,
+          label = "Error creating plot",
+          size = 6
+        ) +
         theme_void() +
         xlim(0, 1) + ylim(0, 1)
     })
@@ -486,7 +495,7 @@ server <- function(input, output, session) {
   observe({
     shinyjs::hide("loading-content")
   })
-  
+
   # Show/hide loading message during map updates
   observeEvent(input$current_season_site, {
     shinyjs::show("loading-content")
@@ -507,7 +516,7 @@ server <- function(input, output, session) {
   #### Sidebar Map###
   output$map <- renderLeaflet({
     data <- colonies_data()
-    
+
     leaflet(data) %>%
       addTiles() %>%
       addMarkers(
@@ -578,7 +587,8 @@ server <- function(input, output, session) {
 
     # Check if the selected date is in the available dates
     selected_date <- input$mapbox_date
-    if (!is.null(selected_date) && !(selected_date %in% available_dates)) {
+    if (!is.null(selected_date) &&
+          !(selected_date %in% available_dates)) {
       # If the selected date is not in the available dates,
       # set it to the first available date
       selected_date <- available_dates[1]
@@ -630,7 +640,7 @@ server <- function(input, output, session) {
     # Return a list containing the filename and alt text
     list(
       src = filename,
-      alt = paste("Time series for GREG since ",  input$forecast_origin)
+      alt = paste("Time series for GREG since ", input$forecast_origin)
     )
   }, deleteFile = FALSE)
 
@@ -642,7 +652,7 @@ server <- function(input, output, session) {
     # Return a list containing the filename and alt text
     list(
       src = filename,
-      alt = paste("Time series for WOST since ",  input$forecast_origin)
+      alt = paste("Time series for WOST since ", input$forecast_origin)
     )
   }, deleteFile = FALSE)
 
@@ -654,7 +664,7 @@ server <- function(input, output, session) {
     # Return a list containing the filename and alt text
     list(
       src = filename,
-      alt = paste("Time series for WHIB since ",  input$forecast_origin)
+      alt = paste("Time series for WHIB since ", input$forecast_origin)
     )
   }, deleteFile = FALSE)
 
@@ -693,19 +703,19 @@ server <- function(input, output, session) {
   dev_data <- reactive({
     req(is_authenticated())
     year_to_filter <- as.numeric(current_year())
-    
-    df %>% 
+
+    df %>%
       filter(year == year_to_filter)  # Use the current_year value
   })
 
   dev_prediction_filter <- reactive({
     req(is_authenticated())
-    
+
     if (is.null(input$dev_mapbox_date)) {
       # Get the most recent date for the selected site
-      filtered_data <- dev_data() %>% 
+      filtered_data <- dev_data() %>%
         filter(site == dev_site_name_filter())
-      
+
       if (nrow(filtered_data) > 0) {
         mapbox_date <- max(filtered_data$event)
       } else {
@@ -720,10 +730,10 @@ server <- function(input, output, session) {
 
     selected_species <- dev_species_name_filter()
     if ("All" %in% selected_species) {
-      to_plot <- dev_data() %>% 
+      to_plot <- dev_data() %>%
         filter(site == dev_site_name_filter(), event == mapbox_date)
     } else {
-      to_plot <- dev_data() %>% 
+      to_plot <- dev_data() %>%
         filter(
           site == dev_site_name_filter(),
           event == mapbox_date,
@@ -740,7 +750,8 @@ server <- function(input, output, session) {
     available_dates <- sort(unique(selected_df$event))
 
     selected_date <- input$dev_mapbox_date
-    if (!is.null(selected_date) && !(selected_date %in% available_dates)) {
+    if (!is.null(selected_date) &&
+          !(selected_date %in% available_dates)) {
       selected_date <- available_dates[1]
     }
 
@@ -771,7 +782,7 @@ server <- function(input, output, session) {
   output$dev_map <- renderLeaflet({
     req(is_authenticated())
     data <- colonies_data()
-    
+
     leaflet(data) %>%
       addTiles() %>%
       addMarkers(
@@ -798,8 +809,7 @@ server <- function(input, output, session) {
   observeEvent(input$dev_map_marker_click, {
     click <- input$dev_map_marker_click
     if (!is.null(click)) {
-      updateSelectInput(session, "dev_prediction_site",
-                       selected = click$id)
+      updateSelectInput(session, "dev_prediction_site", selected = click$id)
     }
   })
 
@@ -807,8 +817,8 @@ server <- function(input, output, session) {
   observeEvent(input$dev_login, {
     if (!is.null(input$dev_username) && !is.null(input$dev_password)) {
       user_creds <- credentials[[input$dev_username]]
-      if (!is.null(user_creds) && 
-          user_creds$password == input$dev_password) {
+      if (!is.null(user_creds) &&
+            user_creds$password == input$dev_password) {
         is_authenticated(TRUE)
         current_user(input$dev_username)
       }
