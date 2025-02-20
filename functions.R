@@ -37,7 +37,6 @@ check_events <- function(x) {
 
 filter_annotations <- function(raw_data) {
   selected_ids <- unique(raw_data$selected_i)
-
   # Majority rule for labels
   majority_rule <- raw_data %>%
     data.frame() %>% # Converting to a non-spatial data frame improves speed 100-200x
@@ -68,16 +67,12 @@ filter_annotations <- function(raw_data) {
 }
 
 plot_annotations <- function(selected_boxes, MAPBOX_ACCESS_TOKEN) {
-  pal <- colorFactor(palette = "Dark2",
-                     domain = selected_boxes$species)
-
+  pal <- colorFactor(palette = "Dark2", domain = selected_boxes$species)
   selected_centroids <- st_centroid(selected_boxes)
   selected_centroids <- st_transform(selected_centroids, 4326)
-
   # Create mapbox tileset
   mapbox_tileset <- unique(selected_centroids$tileset_id)
   mapbox_tileset <- paste("bweinstein.", mapbox_tileset, sep = "")
-
   # Use addTiles and URL template for Mapbox Classic tiles
   mapbox_url_template <-
     paste0(
@@ -86,7 +81,6 @@ plot_annotations <- function(selected_boxes, MAPBOX_ACCESS_TOKEN) {
       "/{z}/{x}/{y}.png?access_token=",
       MAPBOX_ACCESS_TOKEN
     )
-
   m <- leaflet(data = selected_centroids) %>%
     addTiles(
       urlTemplate = mapbox_url_template,
@@ -108,13 +102,10 @@ plot_annotations <- function(selected_boxes, MAPBOX_ACCESS_TOKEN) {
 plot_predictions <- function(df, MAPBOX_ACCESS_TOKEN) {
   # Get unique species from the data
   available_species <- sort(unique(df$label))
-  
   # Create dynamic color palette using our robust function
   species_colors <- species_colors(df)
-  
   mapbox_tileset <- unique(df$tileset_id)
   mapbox_tileset <- paste("bweinstein.", mapbox_tileset, sep = "")
-
   # Use addTiles and URL template for Mapbox Classic tiles
   mapbox_url_template <-
     paste0(
@@ -123,7 +114,6 @@ plot_predictions <- function(df, MAPBOX_ACCESS_TOKEN) {
       "/{z}/{x}/{y}.png?access_token=",
       MAPBOX_ACCESS_TOKEN
     )
-
   m <- leaflet(data = df) %>%
     addTiles(
       urlTemplate = mapbox_url_template,
@@ -142,9 +132,11 @@ plot_predictions <- function(df, MAPBOX_ACCESS_TOKEN) {
   return(m)
 }
 
-time_predictions <- function(df, selected_site, selected_species = "All", selected_event = NULL) {
+time_predictions <- function(df,
+                             selected_site,
+                             selected_species = "All",
+                             selected_event = NULL) {
   df <- data.frame(df)
-
   # Check if the selected site is "All"
   if (selected_site == "All") {
     # Return a blank plot
@@ -152,10 +144,8 @@ time_predictions <- function(df, selected_site, selected_species = "All", select
              geom_blank() +
              theme_void())
   }
-
   # Get unique species from the data
   available_species <- sort(unique(df$label))
-
   # Grouping by site, event, and label (species)
   if ("All" %in% selected_species) {
     g <- df %>%
@@ -168,7 +158,6 @@ time_predictions <- function(df, selected_site, selected_species = "All", select
       group_by(site, event, year, label) %>%
       summarize(n = n(), .groups = "drop")
   }
-
   # Create a dynamic color palette based on number of species
   n_species <- length(available_species)
   species_colors <- colorFactor(
@@ -176,21 +165,26 @@ time_predictions <- function(df, selected_site, selected_species = "All", select
     domain = available_species,
     ordered = TRUE
   )
-
   # Plotting with different colors for each species
   if (nrow(g) > 0) {
-    ggplot(g, aes(x = event, y = n, color = label, group = label)) +
+    ggplot(g, aes(
+      x = event,
+      y = n,
+      color = label,
+      group = label
+    )) +
       geom_line() +
-      geom_point(size = 2) +
+      geom_point(size = 2) + {
       # Add highlighted point if a date is selected
-      {if (!is.null(selected_event)) 
-        geom_point(data = subset(g, event == selected_event),
-                  size = 8,
-                  color = "#00CC00",
-                  alpha = 0.7)} +
-      labs(y = "Detected Birds", 
-           x = "Date",
-           color = "Species") +
+      if (!is.null(selected_event))
+        geom_point(
+          data = subset(g, event == selected_event),
+          size = 8,
+          color = "#00CC00",
+          alpha = 0.7
+        )
+    } +
+      labs(y = "Detected Birds", x = "Date", color = "Species") +
       theme_minimal() +
       theme(
         text = element_text(size = 12),
@@ -213,22 +207,26 @@ time_predictions <- function(df, selected_site, selected_species = "All", select
 species_colors <- function(df) {
   available_species <- sort(unique(df$label))
   n_species <- length(available_species)
-  
-# Define a set of distinct colors (adjusted to remove tree, grass, and soil-like colors)
-base_colors <- c("#E41A1C", "#377EB8", "#984EA3", "#FF7F00",  
-                 "#FFFF33", "#F781BF", "#8B4513", "#00CED1")
+  # Define a set of distinct colors (adjusted to remove tree, grass, and soil-like colors)
+  base_colors <- c(
+    "#E41A1C",
+    "#377EB8",
+    "#984EA3",
+    "#FF7F00",
+    "#FFFF33",
+    "#F781BF",
+    "#8B4513",
+    "#00CED1"
+  )
   # If we need more colors, use colorRampPalette
   if (n_species > length(base_colors)) {
     colors <- colorRampPalette(base_colors)(n_species)
   } else {
     colors <- base_colors[1:n_species]
   }
-  
-  colorFactor(
-    palette = colors,
-    domain = available_species,
-    ordered = TRUE
-  )
+  colorFactor(palette = colors,
+              domain = available_species,
+              ordered = TRUE)
 }
 
 # Construct mapbox url
