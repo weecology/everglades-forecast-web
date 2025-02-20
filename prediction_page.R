@@ -8,7 +8,8 @@ predicted_page <- function(df) {
         selectInput(
           "prediction_site",
           "Select Site",
-          choices = c("All", unique(colonies$site))
+          choices = c("All", unique(colonies$site)),
+          selected = "Joule"
         ),
         selectInput(
           "prediction_species",
