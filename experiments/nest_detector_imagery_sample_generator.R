@@ -61,7 +61,7 @@ get_new_samp_locs <- function(focal_birds, focal_nests, site, year, samples) {
     mutate(sample_id = seq_len(n())) %>%
     select(site, year, sample_id, known_nest, nest_id, species, lat, long)
 
-  return(detector_nests)
+  detector_nests
 }
 
 surveys <- unique(detector_nests[c("site", "year")])
