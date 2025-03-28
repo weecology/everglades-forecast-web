@@ -800,64 +800,72 @@ server <- function(input, output, session) {
 
   # Date slider for Dev Season - only current dates
   output$dev_date_slider <- renderUI({
+    req(is_authenticated())
     selected_site <- dev_site_name_filter()
+
+    # Skip if "All" sites selected
+    if (selected_site == "All") {
+      return(NULL)
+    }
+
+    # Get available dates for the selected site
     selected_df <- dev_data() %>% filter(site == selected_site)
     available_dates <- sort(unique(selected_df$event))
 
-    selected_date <- input$dev_mapbox_date
-    if (!is.null(selected_date) &&
-          !(selected_date %in% available_dates)) {
-      selected_date <- available_dates[1]
+    # Handle the case where no dates are available
+    if (length(available_dates) == 0) {
+      return(div(
+        style = "color: #888; padding: 10px;",
+        "No dates available for this selection."
+      ))
     }
 
-    if (selected_site == "All") {
-      return(NULL)
-    } else {
-      sliderTextInput(
-        inputId = "dev_mapbox_date",
-        label = "Select Date",
-        choices = available_dates,
-        selected = selected_date
-      )
+    # Ensure the selected date is valid
+    selected_date <- input$dev_mapbox_date
+
+    # If the current selection is invalid or NULL, use the most recent date
+    if (is.null(selected_date) || !(selected_date %in% available_dates)) {
+      selected_date <- max(available_dates)
     }
+
+    # Create the slider
+    sliderTextInput(
+      inputId = "dev_mapbox_date",
+      label = "Select Date",
+      choices = available_dates,
+      selected = selected_date
+    )
   })
 
   # Time series plot - only 2023 data
   output$dev_predicted_time_plot <- renderPlot({
     req(is_authenticated())
-    time_predictions(
-      dev_data(),
-      dev_site_name_filter(),
-      selected_species = dev_species_name_filter(),
-      selected_event = input$dev_mapbox_date
-    )
-  })
 
-  # Map outputs stay the same
-  output$dev_map <- renderLeaflet({
-    req(is_authenticated())
-    data <- colonies_data()
-
-    leaflet(data) %>%
-      addTiles() %>%
-      addMarkers(
-        lng = ~longitude,
-        lat = ~latitude,
-        popup = ~site,
-        label = ~site,
-        layerId = ~site
-      ) %>%
-      setView(
-        lng = mean(data$longitude, na.rm = TRUE),
-        lat = mean(data$latitude, na.rm = TRUE),
-        zoom = 8
+    # Try to safely generate the plot, return an empty plot if it fails
+    tryCatch({
+      time_predictions(
+        dev_data(),
+        dev_site_name_filter(),
+        selected_species = dev_species_name_filter(),
+        selected_event = input$dev_mapbox_date
       )
+    }, error = function(e) {
+      # Return a minimal empty plot without any message
+      ggplot() + theme_void()
+    })
   })
 
   # Prediction map - only 2023 data
   output$dev_sample_prediction_map <- renderLeaflet({
     req(is_authenticated())
-    plot_predictions(df = dev_prediction_filter(), MAPBOX_ACCESS_TOKEN)
+
+    # Try to safely generate the map, return a basic map if it fails
+    tryCatch({
+      plot_predictions(df = dev_prediction_filter(), MAPBOX_ACCESS_TOKEN)
+    }, error = function(e) {
+      # Return a simple base map without any message
+      leaflet() %>% addTiles()
+    })
   })
 
   # Map click handler for Dev Season
