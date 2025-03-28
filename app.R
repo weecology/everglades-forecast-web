@@ -100,12 +100,53 @@ server <- function(input, output, session) {
   # Cache for precomputed data
   cached_data <- reactiveVal(NULL)
 
-  # Initialize cache on startup
-  observe({
-    # This will run once when the app starts
-    year_to_filter <- as.numeric(current_year())
+  # Create a reactive value to track page refreshes
+  page_refresh_tracker <- reactiveVal(0)
 
-    # Precompute yearly data with better NA handling and optimization
+  # Add a JavaScript callback to detect page reloads
+  session$onSessionEnded(function() {
+    # This will run when the session ends (including page reloads)
+    # We don't need to do anything here, as a new session will start with the reload
+  })
+
+  # Increment counter on new session
+  observe({
+    # This runs once per new session (including after reload)
+    isolate({
+      page_refresh_tracker(page_refresh_tracker() + 1)
+    })
+  })
+
+  # Modify the cache initialization to also respond to page refreshes
+  observe({
+    # This will run once when the app starts AND when the page is refreshed
+    refresh_count <- page_refresh_tracker()
+    
+    # Check if data files have changed by getting their modification times
+    data_file_path <- "data/PredictedBirds.shp"
+    current_mod_time <- file.info(data_file_path)$mtime
+    
+    # Store or retrieve the previous modification time
+    prev_mod_time <- session$userData$last_mod_time
+    session$userData$last_mod_time <- current_mod_time
+    
+    # Skip reloading if file hasn't changed and this isn't first load
+    if (!is.null(prev_mod_time) && 
+        current_mod_time == prev_mod_time && 
+        !is.null(cached_data())) {
+      return()
+    }
+    
+    # Show loading indicator
+    shinyjs::show("loading-content")
+    
+    # Your existing cache loading code here...
+    year_to_filter <- as.numeric(current_year())
+    
+    # Load data fresh from disk if needed
+    df <- st_read("data/PredictedBirds.shp")
+    
+    # Continue with your existing preprocessing...
     yearly_data <- df %>%
       filter(lubridate::year(as.Date(event)) == year_to_filter) %>%
       # Handle NAs and add computed columns
@@ -177,6 +218,9 @@ server <- function(input, output, session) {
     )
 
     cached_data(cache_list)
+    
+    # Hide loading indicator
+    shinyjs::hide("loading-content")
   })
 
   # Get current year with development fallback

@@ -12,11 +12,26 @@ dev_season_page <- function(df,
       div(
         style = "max-width: 300px; margin: 0 auto; padding: 20px;",
         h3("Login Required"),
-        p("Please log in to view current season data."),
-        textInput("dev_username", "Username"),
-        passwordInput("dev_password", "Password"),
-        actionButton("dev_login", "Login", class = "btn-primary"),
-        tags$br(),
+        p("The current session data is being processed and is not publicly available. Please log in to access the current season's data."),
+        
+        # Wrap the form elements in tags$form to enable Enter key submission
+        tags$form(
+          id = "login-form",
+          textInput("dev_username", "Username"),
+          passwordInput("dev_password", "Password"),
+          actionButton("dev_login", "Login", class = "btn-primary"),
+          
+          # Add JavaScript to handle Enter key press
+          tags$script(HTML("
+            $(document).ready(function() {
+              $('#dev_username, #dev_password').keypress(function(e) {
+                if(e.which == 13) { // Enter key code
+                  $('#dev_login').click();
+                }
+              });
+            });
+          "))
+        ),
         tags$br(),
         textOutput("dev_login_message")
       )
