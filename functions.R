@@ -180,7 +180,6 @@ time_predictions <- function(df,
         geom_point(
           data = subset(g, event == selected_event),
           size = 8,
-          color = "#00CC00",
           alpha = 0.7
         )
     } +
