@@ -132,22 +132,22 @@ server <- function(input, output, session) {
   observe({
     # This will run once when the app starts AND when the page is refreshed
     refresh_count <- page_refresh_tracker()
-  
+
     # Check if data files have changed by getting their modification times
     data_file_path <- "data/PredictedBirds.shp"
     current_mod_time <- file.info(data_file_path)$mtime
-  
+
     # Store or retrieve the previous modification time
     prev_mod_time <- session$userData$last_mod_time
     session$userData$last_mod_time <- current_mod_time
 
     # Skip reloading if file hasn't changed and this isn't first load
-    if (!is.null(prev_mod_time) && 
-        current_mod_time == prev_mod_time && 
-        !is.null(cached_data())) {
+    if (!is.null(prev_mod_time) &&
+          current_mod_time == prev_mod_time &&
+          !is.null(cached_data())) {
       return()
     }
-  
+
     # Show loading indicator
     shinyjs::show("loading-content")
     # Your existing cache loading code here...
@@ -228,7 +228,7 @@ server <- function(input, output, session) {
     )
 
     cached_data(cache_list)
-    
+
     # Hide loading indicator
     shinyjs::hide("loading-content")
   })
