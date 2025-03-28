@@ -15,13 +15,29 @@ suppressPackageStartupMessages({
   library(sf)
   library(stringr)
   library(shinythemes)
-  library(shinyjs) # For JavaScript operations
-  library(lubridate) # Add this for year() function
-  library(memoise) # Added for caching
+  library(shinyjs)
+  library(lubridate)
+  library(memoise)
   library(leaflet.extras)
   library(leaflet.extras2)
   library(leaflet.mapboxgl)
 })
+
+options(shiny.maxRequestSize = 30 * 1024 ^ 2) # Increase max request size to 30MB
+options(shiny.reactlog = FALSE)  # Disable reactive log in production
+options(shiny.autoreload = FALSE)  # Disable auto-reload in production
+
+# Download PredictedBirds.zip if it doesn't exist
+if (!file.exists("data/PredictedBirds.zip")) {
+  message("Downloading PredictedBirds.zip from GitHub...")
+  url <- "https://github.com/weecology/everwatch-predictions/raw/refs/heads/main/PredictedBirds.zip"
+  tryCatch({
+    download.file(url, destfile = "data/PredictedBirds.zip", mode = "wb")
+    message("Download completed successfully.")
+  }, error = function(e) {
+    warning("Failed to download PredictedBirds.zip: ", e$message)
+  })
+}
 
 # Source page UIs
 source("about_page.R")
@@ -30,11 +46,6 @@ source("prediction_page.R")
 source("functions.R")
 source("load_data.R")
 source("dev_season_page.R")
-
-# Add near the top of the file
-options(shiny.maxRequestSize = 30 * 1024 ^ 2) # Increase max request size to 30MB
-options(shiny.reactlog = FALSE)  # Disable reactive log in production
-options(shiny.autoreload = FALSE)  # Disable auto-reload in production
 
 ui <- fluidPage(
   useShinyjs(),
@@ -121,31 +132,30 @@ server <- function(input, output, session) {
   observe({
     # This will run once when the app starts AND when the page is refreshed
     refresh_count <- page_refresh_tracker()
-    
+  
     # Check if data files have changed by getting their modification times
     data_file_path <- "data/PredictedBirds.shp"
     current_mod_time <- file.info(data_file_path)$mtime
-    
+  
     # Store or retrieve the previous modification time
     prev_mod_time <- session$userData$last_mod_time
     session$userData$last_mod_time <- current_mod_time
-    
+
     # Skip reloading if file hasn't changed and this isn't first load
     if (!is.null(prev_mod_time) && 
         current_mod_time == prev_mod_time && 
         !is.null(cached_data())) {
       return()
     }
-    
+  
     # Show loading indicator
     shinyjs::show("loading-content")
-    
     # Your existing cache loading code here...
     year_to_filter <- as.numeric(current_year())
-    
+
     # Load data fresh from disk if needed
     df <- st_read("data/PredictedBirds.shp")
-    
+
     # Continue with your existing preprocessing...
     yearly_data <- df %>%
       filter(lubridate::year(as.Date(event)) == year_to_filter) %>%
