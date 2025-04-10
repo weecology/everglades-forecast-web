@@ -774,7 +774,7 @@ server <- function(input, output, session) {
       if (nrow(filtered_data) > 0) {
         mapbox_date <- max(filtered_data$event)
       } else {
-        mapbox_date <- max(dev_data()$event)  # Fallback to overall max date
+        mapbox_date <- max(dev_data()$event)
       }
     } else {
       mapbox_date <- input$dev_mapbox_date
@@ -837,7 +837,7 @@ server <- function(input, output, session) {
     )
   })
 
-  # Time series plot - only 2023 data
+  # Time series plot
   output$dev_predicted_time_plot <- renderPlot({
     req(is_authenticated())
 
@@ -855,16 +855,50 @@ server <- function(input, output, session) {
     })
   })
 
-  # Prediction map - only 2023 data
   output$dev_sample_prediction_map <- renderLeaflet({
     req(is_authenticated())
+    # Get filtered data
+    filtered_data <- dev_prediction_filter()
 
-    # Try to safely generate the map, return a basic map if it fails
+    # Check if we have valid data to display
+    if (nrow(filtered_data) == 0) {
+      # Return a basic map with an informative message when no data is available
+      return(leaflet() %>%
+        addTiles() %>%
+        addControl(
+          html = paste(
+            "<div style='padding: 8px; background: white; border-radius: 4px; ",
+            "box-shadow: 0 0 15px rgba(0,0,0,0.2);'>",
+            "No bird observations available for this selection</div>"
+          ),
+          position = "topright"
+        ))
+    }
+
+    # Ensure we have valid geometry
+    if (!all(st_is_valid(filtered_data))) {
+      filtered_data <- st_make_valid(filtered_data)
+    }
+
+    # Try to safely generate the map
     tryCatch({
-      plot_predictions(df = dev_prediction_filter(), MAPBOX_ACCESS_TOKEN)
+      # Check if tileset_id exists and is properly formatted
+      if (!"tileset_id" %in% names(filtered_data) || any(is.na(filtered_data$tileset_id))) {
+        filtered_data$tileset_id <- construct_id(filtered_data$site, filtered_data$event)
+      }
+
+      plot_predictions(df = filtered_data, MAPBOX_ACCESS_TOKEN)
     }, error = function(e) {
-      # Return a simple base map without any message
-      leaflet() %>% addTiles()
+      leaflet() %>%
+        addTiles() %>%
+        addControl(
+          html = paste(
+            "<div style='padding: 8px; background: white; border-radius: 4px; ",
+            "box-shadow: 0 0 15px rgba(0,0,0,0.2);'>",
+            "Unable to display map for this selection.</div>"
+          ),
+          position = "topright"
+        )
     })
   })
 
